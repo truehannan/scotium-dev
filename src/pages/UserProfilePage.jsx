@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchUser, fetchUserRepos, fetchUserOrgs, formatNum } from '../utils/github';
+import { fetchUser, fetchUserRepos, fetchUserOrgs, fetchRepoReadme, formatNum } from '../utils/github';
 import { useAuth } from '../context/AuthContext';
 import RepoCard from '../components/ui/RepoCard';
 import SEO from '../components/ui/SEO';
@@ -9,10 +10,17 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 export default function UserProfilePage() {
   const { username } = useParams();
   const { token } = useAuth();
+  const [tab, setTab] = useState('overview');
 
   const { data: user, isLoading, error } = useQuery({ queryKey: ['user', username], queryFn: () => fetchUser(username, token) });
   const { data: repos } = useQuery({ queryKey: ['user-repos', username], queryFn: () => fetchUserRepos(username, 'updated', 1, 30, token), enabled: !!user });
   const { data: orgs } = useQuery({ queryKey: ['user-orgs', username], queryFn: () => fetchUserOrgs(username, token), enabled: !!user });
+  // Profile README: fetched from username/username repo
+  const { data: profileReadme } = useQuery({
+    queryKey: ['user-readme', username],
+    queryFn: () => fetchRepoReadme(username, username, token),
+    enabled: !!user,
+  });
 
   if (isLoading) return <LoadingSpinner text={`Loading ${username}...`} />;
   if (error) return <div className="max-w-4xl mx-auto px-4 py-16 text-center"><h2 className="text-2xl font-bold text-white">User not found</h2></div>;
@@ -21,7 +29,7 @@ export default function UserProfilePage() {
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       <SEO title={`${user.name || user.login} - GitHub Profile`} canonical={`/${username}`} />
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Profile */}
+        {/* Profile Sidebar */}
         <aside className="lg:w-72 flex-shrink-0">
           <div className="card-glass text-center lg:text-left">
             <img src={user.avatar_url} alt="" className="w-28 h-28 rounded-full mx-auto lg:mx-0 ring-4 ring-secondary/10" />
@@ -46,10 +54,47 @@ export default function UserProfilePage() {
             )}
           </div>
         </aside>
-        {/* Repos */}
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold text-white mb-4">Repositories</h2>
-          <div className="grid gap-3">{repos?.map(r => <RepoCard key={r.id} repo={r} />)}</div>
+
+        {/* Main content with tabs */}
+        <div className="flex-1 min-w-0">
+          {/* Tabs */}
+          <div className="flex gap-0.5 border-b border-white/[0.06] mb-6">
+            <button onClick={() => setTab('overview')} className={`px-4 py-3 text-sm ${tab === 'overview' ? 'tab-active' : 'tab-inactive'}`}>Overview</button>
+            <button onClick={() => setTab('repositories')} className={`px-4 py-3 text-sm ${tab === 'repositories' ? 'tab-active' : 'tab-inactive'}`}>Repositories <span className="text-[10px] bg-gray-700/60 px-1.5 py-0.5 rounded-full ml-1">{user.public_repos}</span></button>
+          </div>
+
+          {/* Overview/README tab */}
+          {tab === 'overview' && (
+            <div>
+              {profileReadme ? (
+                <div className="card prose prose-invert max-w-none prose-sm prose-headings:text-white prose-a:text-secondary prose-code:text-secondary-light prose-pre:bg-primary-dark prose-pre:border prose-pre:border-gray-800 mb-6">
+                  <div dangerouslySetInnerHTML={{ __html: profileReadme }} />
+                </div>
+              ) : (
+                <div className="card text-center py-8 mb-6">
+                  <p className="text-gray-500 text-sm">No profile README found.</p>
+                  <p className="text-[11px] text-gray-600 mt-1">Create a repo named <code className="text-secondary">{username}/{username}</code> with a README.md</p>
+                </div>
+              )}
+              {/* Pinned repos (first 6) */}
+              {repos?.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-3">Popular repositories</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {repos.slice(0, 6).map(r => <RepoCard key={r.id} repo={r} />)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Repositories tab */}
+          {tab === 'repositories' && (
+            <div className="grid gap-3">
+              {repos?.map(r => <RepoCard key={r.id} repo={r} />)}
+              {(!repos || repos.length === 0) && <div className="card text-center py-8 text-gray-400 text-sm">No repositories</div>}
+            </div>
+          )}
         </div>
       </div>
     </div>

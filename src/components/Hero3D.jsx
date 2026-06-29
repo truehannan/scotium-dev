@@ -1,82 +1,119 @@
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Html } from '@react-three/drei';
-import { useRef, useMemo } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-const CODE_SNIPPETS = [
-  { lang: 'Python', color: '#3572A5', code: 'def analyze(repo):\n  score = 0\n  score += commits * 2\n  return score / max' },
-  { lang: 'Rust', color: '#dea584', code: 'fn main() {\n  let repos = fetch_trending();\n  repos.iter()\n    .filter(|r| r.stars > 100)' },
-  { lang: 'Go', color: '#00ADD8', code: 'func GetPulse(repo string) {\n  health := calculate(repo)\n  ch <- HealthScore{\n    Score: health,\n  }' },
-  { lang: 'JavaScript', color: '#f1e05a', code: 'export async function\n  fetchTrending(lang) {\n  const res = await fetch(\n    `${API}/search/repos`)' },
-  { lang: 'TypeScript', color: '#3178c6', code: 'interface RepoHealth {\n  score: number;\n  velocity: number;\n  busFactor: number;\n}' },
-  { lang: 'C++', color: '#f34b7d', code: '#include <vector>\nstd::vector<Repo>\n  filter_repos(\n    int min_stars) {' },
-];
+const CODE_CHARS = 'const fn async await return import export function class interface struct impl pub let var def yield match for while if else try catch throw new delete void typeof instanceof switch case break continue do enum extends super this static get set from of in'.split(' ');
+const SYMBOLS = '{}[]();<>=+-*/&|!?:,.@#$%^~`_0123456789'.split('');
+const ALL_CHARS = [...CODE_CHARS, ...SYMBOLS, ...SYMBOLS, ...SYMBOLS];
 
-function CodePanel({ snippet, position, rotation }) {
-  const meshRef = useRef();
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3 + position[0]) * 0.05;
-    }
-  });
+export default function HeroMatrixRain() {
+  const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: -1000, y: -1000 });
+  const [dimensions, setDimensions] = useState({ w: 0, h: 0 });
 
-  return (
-    <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
-      <group position={position} rotation={rotation} ref={meshRef}>
-        <Html transform occlude distanceFactor={8} style={{ pointerEvents: 'none' }}>
-          <div className="w-[200px] bg-black/80 backdrop-blur-sm border border-white/10 rounded-xl p-3 shadow-2xl" style={{ borderColor: `${snippet.color}30` }}>
-            <div className="flex items-center gap-1.5 mb-2">
-              <div className="w-2 h-2 rounded-full bg-red-400/80" />
-              <div className="w-2 h-2 rounded-full bg-yellow-400/80" />
-              <div className="w-2 h-2 rounded-full bg-green-400/80" />
-              <span className="text-[9px] text-gray-500 ml-auto font-mono">{snippet.lang}</span>
-            </div>
-            <pre className="text-[10px] font-mono leading-relaxed" style={{ color: snippet.color }}>{snippet.code}</pre>
-          </div>
-        </Html>
-      </group>
-    </Float>
-  );
-}
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-function Scene() {
-  const positions = useMemo(() => [
-    [-4, 2, -3], [4, 1.5, -4], [-3, -1.5, -2], [3.5, -1, -3], [-1, 3, -5], [2, -2.5, -4],
-  ], []);
+    const resize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+      setDimensions({ w, h });
+    };
+    resize();
+    window.addEventListener('resize', resize);
 
-  return (
-    <>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[10, 10, 10]} intensity={0.5} color="#10b981" />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#3b82f6" />
-      {CODE_SNIPPETS.map((snippet, i) => (
-        <CodePanel key={i} snippet={snippet} position={positions[i]} rotation={[0, 0, 0]} />
-      ))}
-    </>
-  );
-}
+    const fontSize = 14;
+    const cols = Math.floor(canvas.width / fontSize);
+    const drops = Array(cols).fill(0).map(() => Math.floor(Math.random() * -50));
+    const speeds = Array(cols).fill(0).map(() => 0.3 + Math.random() * 0.7);
+    const charCache = Array(cols).fill('').map(() => ALL_CHARS[Math.floor(Math.random() * ALL_CHARS.length)]);
 
-export default function Hero3D() {
+    let animId;
+    const draw = () => {
+      // Semi-transparent black to create trail effect
+      ctx.fillStyle = 'rgba(27, 27, 27, 0.06)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = `${fontSize}px "JetBrains Mono", monospace`;
+
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+      const spotlightRadius = 120;
+
+      for (let i = 0; i < cols; i++) {
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        // Change char occasionally
+        if (Math.random() > 0.95) {
+          charCache[i] = ALL_CHARS[Math.floor(Math.random() * ALL_CHARS.length)];
+        }
+
+        // Calculate distance from mouse for spotlight
+        const dist = Math.sqrt((x - mx) ** 2 + (y - my) ** 2);
+        const inSpotlight = dist < spotlightRadius;
+
+        if (inSpotlight) {
+          const intensity = 1 - (dist / spotlightRadius);
+          const alpha = 0.3 + intensity * 0.7;
+          ctx.fillStyle = `rgba(0, 191, 99, ${alpha})`;
+          ctx.shadowColor = '#00bf63';
+          ctx.shadowBlur = intensity * 8;
+        } else {
+          ctx.fillStyle = 'rgba(0, 191, 99, 0.12)';
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.fillText(charCache[i], x, y);
+        ctx.shadowBlur = 0;
+
+        // Reset drop when off screen
+        if (y > canvas.height && Math.random() > 0.98) {
+          drops[i] = 0;
+        }
+        drops[i] += speeds[i];
+      }
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    const onMouse = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+    const onLeave = () => { mouseRef.current = { x: -1000, y: -1000 }; };
+
+    canvas.addEventListener('mousemove', onMouse);
+    canvas.addEventListener('mouseleave', onLeave);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+      canvas.removeEventListener('mousemove', onMouse);
+      canvas.removeEventListener('mouseleave', onLeave);
+    };
+  }, []);
+
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Three.js Canvas Background */}
-      <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 8], fov: 60 }} style={{ background: 'transparent' }}>
-          <Scene />
-        </Canvas>
-      </div>
+      {/* Matrix Rain Canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
 
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/40 via-transparent to-primary z-[1]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_#0a0e27_80%)] z-[1]" />
+      {/* Subtle vignette overlay */}
+      <div className="absolute inset-0 z-[1] pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, #1B1B1B 85%)' }} />
 
       {/* Content */}
       <div className="relative z-10 text-center max-w-3xl px-6">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight">
             Discover.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary via-accent-cyan to-accent-blue">Contribute.</span><br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary via-[#33d480] to-accent-cyan">Contribute.</span><br />
             Build.
           </h1>
         </motion.div>
@@ -85,7 +122,7 @@ export default function Hero3D() {
         </motion.p>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-8 flex items-center gap-4 justify-center">
           <Link to="/explore" className="btn-primary text-sm">Explore Repos</Link>
-          <Link to="/search" className="btn-outline text-sm">Search GitHub</Link>
+          <Link to="/dashboard" className="btn-outline text-sm">Dashboard</Link>
         </motion.div>
       </div>
 

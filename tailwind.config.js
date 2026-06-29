@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: { DEFAULT: '#0a0e27', light: '#121836', dark: '#060919', '50': '#0d1230' },
-        secondary: { DEFAULT: '#10b981', light: '#34d399', dark: '#059669' },
+        primary: { DEFAULT: '#1B1B1B', light: '#252525', dark: '#111111', '50': '#2a2a2a' },
+        secondary: { DEFAULT: '#00bf63', light: '#33d480', dark: '#009e52' },
         accent: { purple: '#8b5cf6', blue: '#3b82f6', pink: '#ec4899', orange: '#f97316', cyan: '#06b6d4' },
       },
       fontFamily: {
@@ -14,8 +14,6 @@ export default {
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
-        'float-slow': 'float 8s ease-in-out infinite',
-        'float-slower': 'float 10s ease-in-out infinite',
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
       },
       keyframes: {

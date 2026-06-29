@@ -10,7 +10,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
           'editor-vendor': ['@uiw/react-codemirror', '@codemirror/theme-one-dark'],
           'motion': ['framer-motion'],
         },
