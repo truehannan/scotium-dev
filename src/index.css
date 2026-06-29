@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0a0e27;
+    color: #f8fafc;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0a0e27;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-secondary hover:bg-secondary-dark text-white font-medium py-2 px-4 rounded-lg transition-all duration-200;
+  }
+
+  .btn-outline {
+    @apply border border-secondary text-secondary hover:bg-secondary hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-primary-light border border-gray-800 rounded-xl p-5 hover:border-secondary/30 transition-all duration-200;
+  }
+
+  .input-field {
+    @apply bg-primary-light border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all duration-200;
+  }
+}

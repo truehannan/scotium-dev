@@ -1,0 +1,13 @@
+name = "scotium"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run build"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "scotium"
+database_id = "0d85242b-10c9-44dd-b14d-f324afdd8480"
+
+[vars]
+GITHUB_CLIENT_ID = "Iv23liQd2lcWRmtGkYVi"
