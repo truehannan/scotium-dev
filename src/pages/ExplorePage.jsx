@@ -4,6 +4,7 @@ import { fetchTrendingRepos, LANGUAGES } from '../utils/github';
 import { useAuth } from '../context/AuthContext';
 import RepoCard from '../components/RepoCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SEO from '../components/SEO';
 
 export default function ExplorePage() {
   const { token } = useAuth();
@@ -19,6 +20,8 @@ export default function ExplorePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <SEO title="Explore GitHub Trending Repos" description="Discover interesting projects across all of GitHub" canonical="/explore" />
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Explore Repositories</h1>

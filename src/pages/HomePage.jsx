@@ -4,6 +4,7 @@ import { fetchTrendingRepos, LANGUAGES } from '../utils/github';
 import { useAuth } from '../context/AuthContext';
 import RepoCard from '../components/RepoCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SEO from '../components/SEO';
 
 export default function HomePage() {
   const { token } = useAuth();
@@ -18,6 +19,7 @@ export default function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <SEO title="Scotium - Discover Trending GitHub Repos" description="Find trending open source projects and repositories on GitHub." canonical="/" />
       {/* Hero Section */}
       <div className="text-center mb-10">
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">

@@ -143,3 +143,81 @@ export const LANGUAGE_COLORS = {
   Vue: '#41b883',
   Svelte: '#ff3e00',
 };
+
+
+// Dashboard APIs
+export async function fetchAuthenticatedUser(token) {
+  const res = await axios.get(`${GITHUB_API}/user`, {
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+export async function fetchUserEvents(username, page = 1, token = null) {
+  const res = await axios.get(`${GITHUB_API}/users/${username}/events`, {
+    params: { per_page: 30, page },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+export async function fetchUserReceivedEvents(username, page = 1, token = null) {
+  const res = await axios.get(`${GITHUB_API}/users/${username}/received_events`, {
+    params: { per_page: 30, page },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+export async function fetchUserIssues(token) {
+  const res = await axios.get(`${GITHUB_API}/issues`, {
+    params: { filter: 'all', state: 'open', per_page: 20, sort: 'updated' },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+// Issue search
+export async function searchIssues(query, sort = 'reactions', page = 1, perPage = 30, token = null) {
+  const res = await axios.get(`${GITHUB_API}/search/issues`, {
+    params: { q: query, sort, order: 'desc', per_page: perPage, page },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+export async function fetchIssueComments(owner, repo, issueNumber, token = null) {
+  const res = await axios.get(`${GITHUB_API}/repos/${owner}/${repo}/issues/${issueNumber}/comments`, {
+    params: { per_page: 50 },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+// Code search
+export async function searchCode(query, language = '', page = 1, perPage = 30, token = null) {
+  let q = query;
+  if (language) q += ` language:${language}`;
+  const res = await axios.get(`${GITHUB_API}/search/code`, {
+    params: { q, per_page: perPage, page },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+// Authenticated user repos (including private)
+export async function fetchAuthUserRepos(sort = 'updated', page = 1, perPage = 30, token = null) {
+  const res = await axios.get(`${GITHUB_API}/user/repos`, {
+    params: { sort, per_page: perPage, page, direction: 'desc', affiliation: 'owner' },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
+
+export async function fetchOrgReposAuth(orgname, sort = 'updated', page = 1, perPage = 30, token = null) {
+  const res = await axios.get(`${GITHUB_API}/orgs/${orgname}/repos`, {
+    params: { sort, per_page: perPage, page, direction: 'desc' },
+    headers: getHeaders(token),
+  });
+  return res.data;
+}
