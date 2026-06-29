@@ -1,0 +1,31 @@
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
+import ExplorePage from './pages/ExplorePage';
+import SearchPage from './pages/SearchPage';
+import UserProfilePage from './pages/UserProfilePage';
+import OrgPage from './pages/OrgPage';
+import SupportPage from './pages/SupportPage';
+import AuthCallback from './pages/AuthCallback';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+
+function App() {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/support" element={<SupportPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/orgs/:orgname" element={<OrgPage />} />
+        <Route path="/:username" element={<UserProfilePage />} />
+      </Routes>
+    </Layout>
+  );
+}
+
+export default App;
