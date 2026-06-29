@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSidebar } from '../context/SidebarContext';
 
 export default function Navbar() {
   const { user, login, logout, loading } = useAuth();
+  const { toggle: toggleSidebar } = useSidebar();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,14 +35,19 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Left: Logo + Nav Links */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            {/* Sidebar toggle for mobile */}
+            <button
+              onClick={toggleSidebar}
+              className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg hover:bg-primary-light transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-white group-hover:text-secondary transition-colors">Scotium</span>
+              <img src="/logo.png" alt="Scotium" className="h-7 w-auto" />
             </Link>
 
             <div className="hidden md:flex items-center gap-1">
@@ -96,6 +103,13 @@ export default function Navbar() {
                     >
                       Your Profile
                     </Link>
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-primary hover:text-secondary transition-colors"
+                    >
+                      Dashboard
+                    </Link>
                     <button
                       onClick={() => { logout(); setDropdownOpen(false); }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-primary hover:text-red-400 transition-colors"
@@ -120,7 +134,7 @@ export default function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-400 hover:text-white"
+              className="md:hidden lg:hidden hidden p-2 text-gray-400 hover:text-white"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileMenuOpen ? (

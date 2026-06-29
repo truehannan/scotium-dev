@@ -5,6 +5,7 @@ import { searchRepos, searchUsers } from '../utils/github';
 import { useAuth } from '../context/AuthContext';
 import RepoCard from '../components/RepoCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SEO from '../components/SEO';
 import { Link } from 'react-router-dom';
 
 export default function SearchPage() {
@@ -41,6 +42,8 @@ export default function SearchPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <SEO title="Search GitHub Repos" description="Search repositories, users, and code across GitHub" canonical="/search" />
+
       {/* Search Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-4">Search GitHub</h1>
