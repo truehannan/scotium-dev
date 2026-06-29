@@ -67,3 +67,20 @@ CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_cms_announcements_active ON cms_announcements(active);
 CREATE INDEX IF NOT EXISTS idx_cms_banners_slot ON cms_banners(slot, active);
 CREATE INDEX IF NOT EXISTS idx_cms_sponsored_active ON cms_sponsored_repos(active);
+
+
+-- Components marketplace
+CREATE TABLE IF NOT EXISTS components (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  code TEXT NOT NULL,
+  category TEXT DEFAULT 'Custom',
+  author_username TEXT NOT NULL,
+  upvotes INTEGER DEFAULT 0,
+  active INTEGER DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_components_category ON components(category, active);
+CREATE INDEX IF NOT EXISTS idx_components_author ON components(author_username);

@@ -49,3 +49,68 @@
     @apply text-2xl sm:text-3xl font-bold text-white;
   }
 }
+
+
+/* GitHub-like README styling */
+.github-readme {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #e6edf3;
+  word-wrap: break-word;
+}
+.github-readme h1 { font-size: 2em; font-weight: 700; border-bottom: 1px solid #3a3a3a; padding-bottom: 0.3em; margin: 1.5em 0 0.75em; color: #fff; }
+.github-readme h2 { font-size: 1.5em; font-weight: 700; border-bottom: 1px solid #3a3a3a; padding-bottom: 0.3em; margin: 1.5em 0 0.75em; color: #fff; }
+.github-readme h3 { font-size: 1.25em; font-weight: 600; margin: 1.5em 0 0.5em; color: #fff; }
+.github-readme h4 { font-size: 1em; font-weight: 600; margin: 1.25em 0 0.5em; color: #fff; }
+.github-readme h5, .github-readme h6 { font-size: 0.875em; font-weight: 600; margin: 1em 0 0.5em; color: #ccc; }
+.github-readme p { margin: 0 0 1em; }
+.github-readme a { color: #00bf63; text-decoration: none; }
+.github-readme a:hover { text-decoration: underline; }
+.github-readme img { max-width: 100%; height: auto; border-radius: 8px; margin: 0.5em 0; }
+.github-readme ul, .github-readme ol { padding-left: 2em; margin: 0 0 1em; }
+.github-readme li { margin: 0.3em 0; }
+.github-readme li + li { margin-top: 0.25em; }
+.github-readme blockquote { padding: 0 1em; color: #8b949e; border-left: 3px solid #3a3a3a; margin: 0 0 1em; }
+.github-readme hr { border: none; border-top: 1px solid #3a3a3a; margin: 1.5em 0; }
+.github-readme table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+.github-readme th, .github-readme td { border: 1px solid #3a3a3a; padding: 8px 12px; text-align: left; }
+.github-readme th { background: #252525; font-weight: 600; color: #fff; }
+.github-readme tr:nth-child(even) { background: #1f1f1f; }
+.github-readme code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: #2a2a2a;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  color: #00bf63;
+}
+.github-readme pre {
+  background: #161616;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.github-readme pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+  color: #e6edf3;
+  line-height: 1.5;
+}
+.github-readme details { margin: 1em 0; }
+.github-readme summary { cursor: pointer; font-weight: 600; color: #fff; }
+.github-readme input[type="checkbox"] { margin-right: 0.5em; accent-color: #00bf63; }
+.github-readme .highlight { background: #2a2a2a; border-radius: 8px; }
+.github-readme kbd {
+  display: inline-block;
+  padding: 2px 5px;
+  font: 11px 'JetBrains Mono', monospace;
+  line-height: 1;
+  color: #ccc;
+  background: #252525;
+  border: 1px solid #3a3a3a;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #1B1B1B;
+}

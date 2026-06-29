@@ -6,7 +6,7 @@ import SEO from '../../components/ui/SEO';
 const ADMIN_USERNAME = 'truehannan';
 
 export default function AdminCMS() {
-  const { user, token } = useAuth();
+  const { user, token, loading } = useAuth();
   const [tab, setTab] = useState('overview');
   const [announcements, setAnnouncements] = useState([]);
   const [banners, setBanners] = useState([]);
@@ -22,6 +22,10 @@ export default function AdminCMS() {
 
   const save = (key, data) => { localStorage.setItem(key, JSON.stringify(data)); };
 
+  // Show nothing while auth is loading (prevents flash)
+  if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin" /></div>;
+
+  // Admin-only: redirect everyone else to home (acts like 404)
   if (!user || user.login !== ADMIN_USERNAME) return <Navigate to="/" replace />;
 
   return (

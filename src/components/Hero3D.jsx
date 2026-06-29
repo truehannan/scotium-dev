@@ -111,9 +111,9 @@ export default function HeroMatrixRain() {
       {/* Content */}
       <div className="relative z-10 text-center max-w-3xl px-6">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight font-mono">
             Discover.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary via-[#33d480] to-accent-cyan">Contribute.</span><br />
+            Contribute.<br />
             Build.
           </h1>
         </motion.div>

@@ -4,6 +4,7 @@ import { fetchRepo, fetchRepoReadme, fetchRepoContents, fetchRepoIssues, fetchRe
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/ui/SEO';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import MarkdownReadme from '../components/ui/MarkdownReadme';
 import { useState } from 'react';
 
 export default function RepoDetailPage() {
@@ -115,11 +116,7 @@ export default function RepoDetailPage() {
               </div>
             )}
             {/* README */}
-            {readme && (
-              <div className="card prose prose-invert max-w-none prose-sm prose-headings:text-white prose-a:text-secondary prose-code:text-secondary-light prose-pre:bg-primary-dark prose-pre:border prose-pre:border-gray-800">
-                <div dangerouslySetInnerHTML={{ __html: readme }} />
-              </div>
-            )}
+            {readme && <MarkdownReadme html={readme} />}
           </div>
 
           {/* Right sidebar: Health Pulse + Info */}

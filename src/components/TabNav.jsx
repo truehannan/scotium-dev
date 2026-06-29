@@ -5,7 +5,7 @@ import { LANGUAGES } from '../utils/github';
 const TABS = [
   { path: '/', label: 'Trending' },
   { path: '/explore', label: 'Explore' },
-  { path: '/search', label: 'Search' },
+  { path: '/components', label: 'Components' },
   { path: '/dashboard', label: 'Dashboard', auth: true },
 ];
 

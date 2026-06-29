@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import RepoCard from '../components/ui/RepoCard';
 import SEO from '../components/ui/SEO';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import MarkdownReadme from '../components/ui/MarkdownReadme';
 
 export default function OrgPage() {
   const { orgname } = useParams();
@@ -68,9 +69,7 @@ export default function OrgPage() {
       {tab === 'overview' && (
         <div>
           {orgReadme ? (
-            <div className="card prose prose-invert max-w-none prose-sm prose-headings:text-white prose-a:text-secondary prose-code:text-secondary-light prose-pre:bg-primary-dark prose-pre:border prose-pre:border-gray-800 mb-6">
-              <div dangerouslySetInnerHTML={{ __html: orgReadme }} />
-            </div>
+            <div className="mb-6"><MarkdownReadme html={orgReadme} /></div>
           ) : (
             <div className="card text-center py-8 mb-6">
               <p className="text-gray-500 text-sm">No organization README found.</p>
