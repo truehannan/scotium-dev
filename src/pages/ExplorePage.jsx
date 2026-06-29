@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTrendingRepos, LANGUAGES } from '../utils/github';
+import { fetchTrending, LANGUAGES } from '../utils/github';
 import { useAuth } from '../context/AuthContext';
-import RepoCard from '../components/RepoCard';
-import LoadingSpinner from '../components/LoadingSpinner';
-import SEO from '../components/SEO';
+import RepoCard from '../components/ui/RepoCard';
+import BannerAd from '../components/ui/BannerAd';
+import SEO from '../components/ui/SEO';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 export default function ExplorePage() {
   const { token } = useAuth();
@@ -13,100 +14,42 @@ export default function ExplorePage() {
   const [sort, setSort] = useState('stars');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['explore', language, since, sort, page],
-    queryFn: () => fetchTrendingRepos({ language, since, sort, page, perPage: 30, token }),
+    queryFn: () => fetchTrending({ language, since, sort, page, perPage: 30, token }),
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <SEO title="Explore GitHub Trending Repos" description="Discover interesting projects across all of GitHub" canonical="/explore" />
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
+      <SEO title="Explore GitHub Trending Repos" canonical="/explore" />
+      <h1 className="section-title mb-6">Explore Repositories</h1>
 
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Explore Repositories</h1>
-        <p className="text-gray-400">Discover interesting projects across all of GitHub</p>
+      {/* Filters */}
+      <div className="card mb-6 flex flex-wrap items-center gap-3">
+        <select value={language} onChange={e => { setLanguage(e.target.value); setPage(1); }} className="input-field text-xs py-1.5 w-36">
+          <option value="">All Languages</option>
+          {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+        </select>
+        <select value={since} onChange={e => { setSince(e.target.value); setPage(1); }} className="input-field text-xs py-1.5 w-32">
+          <option value="daily">Today</option><option value="weekly">This Week</option><option value="monthly">This Month</option>
+        </select>
+        <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} className="input-field text-xs py-1.5 w-28">
+          <option value="stars">Stars</option><option value="forks">Forks</option><option value="updated">Updated</option>
+        </select>
       </div>
 
-      {/* Filters Bar */}
-      <div className="card mb-6">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-400">Language:</label>
-            <select
-              value={language}
-              onChange={(e) => { setLanguage(e.target.value); setPage(1); }}
-              className="input-field text-sm py-1.5"
-            >
-              <option value="">All</option>
-              {LANGUAGES.map((lang) => (
-                <option key={lang} value={lang}>{lang}</option>
-              ))}
-            </select>
-          </div>
+      <BannerAd slot="explore-top" />
 
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-400">Time:</label>
-            <select
-              value={since}
-              onChange={(e) => { setSince(e.target.value); setPage(1); }}
-              className="input-field text-sm py-1.5"
-            >
-              <option value="daily">Today</option>
-              <option value="weekly">This Week</option>
-              <option value="monthly">This Month</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-400">Sort:</label>
-            <select
-              value={sort}
-              onChange={(e) => { setSort(e.target.value); setPage(1); }}
-              className="input-field text-sm py-1.5"
-            >
-              <option value="stars">Stars</option>
-              <option value="forks">Forks</option>
-              <option value="updated">Updated</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Results */}
-      {isLoading && <LoadingSpinner text="Exploring repositories..." />}
-
-      {error && (
-        <div className="card text-center py-8">
-          <p className="text-gray-400">Failed to load repositories. Please try again later.</p>
-        </div>
-      )}
-
+      {isLoading && <LoadingSpinner />}
       {data && (
         <>
-          <div className="grid gap-4 mb-8">
-            {data.items?.map((repo) => (
-              <RepoCard key={repo.id} repo={repo} />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+            {data.items?.map(r => <RepoCard key={r.id} repo={r} />)}
           </div>
-
-          {/* Pagination */}
           <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-              className="btn-outline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-400">Page {page}</span>
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={!data.items || data.items.length < 30}
-              className="btn-outline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
+            <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="btn-outline text-xs disabled:opacity-40">Prev</button>
+            <span className="text-xs text-gray-500">Page {page}</span>
+            <button onClick={() => setPage(page + 1)} disabled={!data.items?.length || data.items.length < 30} className="btn-outline text-xs disabled:opacity-40">Next</button>
           </div>
         </>
       )}

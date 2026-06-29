@@ -1,52 +1,16 @@
+import SEO from '../components/ui/SEO';
 export default function TermsPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-      <h1 className="text-3xl font-bold text-white mb-8">Terms of Service</h1>
-
-      <div className="prose prose-invert max-w-none space-y-6">
-        <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-3">Acceptance of Terms</h2>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            By using Scotium, you agree to these terms of service. Scotium is a tool for exploring
-            and discovering GitHub repositories and is provided as-is without warranty.
-          </p>
-        </div>
-
-        <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-3">Use of Service</h2>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            Scotium provides a user interface for interacting with publicly available GitHub data.
-            You agree not to abuse the service, attempt to circumvent rate limits, or use it for
-            any unlawful purpose.
-          </p>
-        </div>
-
-        <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-3">GitHub API</h2>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            Scotium relies on the GitHub API. Your use of Scotium is also subject to GitHub's
-            Terms of Service and Acceptable Use Policies. Rate limits and availability depend
-            on GitHub's infrastructure.
-          </p>
-        </div>
-
-        <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-3">Disclaimer</h2>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            Scotium is provided "as is" without warranties of any kind. We are not responsible
-            for the accuracy, completeness, or availability of data displayed through the platform.
-            The service may be modified or discontinued at any time.
-          </p>
-        </div>
-
-        <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-3">Contact</h2>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            Questions about these terms? Visit our
-            <a href="/support" className="text-secondary hover:underline ml-1">support page</a>.
-          </p>
-        </div>
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <SEO title="Terms of Service" canonical="/terms" />
+      <h1 className="section-title mb-8">Terms of Service</h1>
+      <div className="space-y-4">
+        <Section title="Acceptance" text="By using Scotium you agree to these terms. Scotium is provided as-is without warranty." />
+        <Section title="Use of Service" text="You agree not to abuse the service, attempt to circumvent rate limits, or use for unlawful purposes." />
+        <Section title="GitHub API" text="Your use is subject to GitHub's Terms of Service. Rate limits and availability depend on GitHub's infrastructure." />
+        <Section title="Disclaimer" text="Scotium is provided without warranties. We are not responsible for data accuracy or availability." />
       </div>
     </div>
   );
 }
+function Section({ title, text }) { return <div className="card"><h2 className="text-sm font-semibold text-white mb-2">{title}</h2><p className="text-xs text-gray-400 leading-relaxed">{text}</p></div>; }

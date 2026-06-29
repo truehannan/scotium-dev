@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { fetchAuthUserRepos, fetchUserEvents, fetchUserIssues, fetchUserOrgs, fetchOrgReposAuth, formatNumber, formatDate } from '../utils/github';
-import SEO from '../components/SEO';
-import LoadingSpinner from '../components/LoadingSpinner';
-import RepoCard from '../components/RepoCard';
+import { fetchAuthRepos, fetchUserEvents, fetchUserIssues, fetchUserOrgs, fetchOrgRepos, formatNum, formatDate, LANG_COLORS } from '../utils/github';
+import RepoCard from '../components/ui/RepoCard';
+import SEO from '../components/ui/SEO';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Link, Navigate } from 'react-router-dom';
 
 export default function DashboardPage() {
@@ -13,219 +13,122 @@ export default function DashboardPage() {
   const [tab, setTab] = useState('repos');
 
   const { data: repos, isLoading: reposLoading } = useQuery({
-    queryKey: ['dashboard-repos', user?.login, activeOrg],
-    queryFn: () => activeOrg
-      ? fetchOrgReposAuth(activeOrg, 'updated', 1, 30, token)
-      : fetchAuthUserRepos('updated', 1, 30, token),
+    queryKey: ['dash-repos', user?.login, activeOrg],
+    queryFn: () => activeOrg ? fetchOrgRepos(activeOrg, 1, 50, token) : fetchAuthRepos('updated', 1, 50, token),
     enabled: !!user,
   });
+  const { data: events } = useQuery({ queryKey: ['dash-events', user?.login], queryFn: () => fetchUserEvents(user.login, 1, token), enabled: !!user });
+  const { data: issues } = useQuery({ queryKey: ['dash-issues'], queryFn: () => fetchUserIssues(token), enabled: !!user });
+  const { data: orgs } = useQuery({ queryKey: ['dash-orgs', user?.login], queryFn: () => fetchUserOrgs(user.login, token), enabled: !!user });
 
-  const { data: events } = useQuery({
-    queryKey: ['dashboard-events', user?.login],
-    queryFn: () => fetchUserEvents(user.login, 1, token),
-    enabled: !!user,
-  });
-
-  const { data: issues } = useQuery({
-    queryKey: ['dashboard-issues'],
-    queryFn: () => fetchUserIssues(token),
-    enabled: !!user,
-  });
-
-  const { data: orgs } = useQuery({
-    queryKey: ['dashboard-orgs', user?.login],
-    queryFn: () => fetchUserOrgs(user.login, token),
-    enabled: !!user,
-  });
-
-  if (authLoading) return <LoadingSpinner text="Checking authentication..." />;
+  if (authLoading) return <LoadingSpinner />;
   if (!user) return <Navigate to="/" replace />;
 
-  const topRepos = repos?.sort((a, b) => b.stargazers_count - a.stargazers_count).slice(0, 5) || [];
-  const recentActivity = events?.slice(0, 10) || [];
+  const allRepos = repos || [];
+  const topRepos = [...allRepos].sort((a, b) => b.stargazers_count - a.stargazers_count).slice(0, 5);
+  const totalStars = allRepos.reduce((a, r) => a + r.stargazers_count, 0);
+  const totalForks = allRepos.reduce((a, r) => a + r.forks_count, 0);
+  const privateCount = allRepos.filter(r => r.private).length;
+
+  // Language distribution
+  const langCount = {};
+  allRepos.forEach(r => { if (r.language) langCount[r.language] = (langCount[r.language] || 0) + 1; });
+  const topLangs = Object.entries(langCount).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <SEO title="Dashboard" description="Your GitHub dashboard - repos, activity, and issues" canonical="/dashboard" />
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
+      <SEO title="Dashboard" canonical="/dashboard" />
 
-      {/* Profile Header */}
-      <div className="card mb-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          <img src={user.avatar_url} alt={user.login} className="w-20 h-20 rounded-full ring-4 ring-secondary/20" />
-          <div className="text-center sm:text-left flex-1">
-            <h1 className="text-2xl font-bold text-white">{user.name || user.login}</h1>
-            <p className="text-gray-400">@{user.login}</p>
-            {user.bio && <p className="text-sm text-gray-300 mt-1">{user.bio}</p>}
-            <div className="flex flex-wrap items-center gap-4 mt-3 justify-center sm:justify-start">
-              <Stat label="Repos" value={user.public_repos + (user.total_private_repos || 0)} />
-              <Stat label="Followers" value={user.followers} />
-              <Stat label="Following" value={user.following} />
-              <Stat label="Gists" value={user.public_gists} />
-            </div>
+      {/* Profile + Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+        <div className="card-glass flex flex-col items-center py-6">
+          <img src={user.avatar_url} alt="" className="w-16 h-16 rounded-full ring-2 ring-secondary/20" />
+          <h2 className="text-lg font-bold text-white mt-3">{user.name || user.login}</h2>
+          <p className="text-xs text-gray-500">@{user.login}</p>
+          {user.bio && <p className="text-[11px] text-gray-400 text-center mt-2 max-w-[200px]">{user.bio}</p>}
+        </div>
+        <StatCard label="Total Stars" value={formatNum(totalStars)} icon="★" color="text-yellow-400" />
+        <StatCard label="Total Forks" value={formatNum(totalForks)} icon="⑂" color="text-blue-400" />
+        <StatCard label="Private Repos" value={privateCount} icon="🔒" color="text-purple-400" />
+      </div>
+
+      {/* Language Breakdown */}
+      {topLangs.length > 0 && (
+        <div className="card mb-6">
+          <h3 className="text-sm font-semibold text-white mb-3">Languages</h3>
+          <div className="flex rounded-full h-2.5 overflow-hidden mb-2">
+            {topLangs.map(([lang, count]) => (
+              <div key={lang} style={{ width: `${(count / allRepos.length) * 100}%`, backgroundColor: LANG_COLORS[lang] || '#6b7280' }} title={lang} />
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3 text-[11px] text-gray-400">
+            {topLangs.map(([lang, count]) => (
+              <span key={lang} className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: LANG_COLORS[lang] || '#6b7280' }} />{lang} ({count})</span>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Org Switcher */}
       {orgs && orgs.length > 0 && (
         <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
-          <button
-            onClick={() => setActiveOrg(null)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex-shrink-0
-              ${!activeOrg ? 'bg-secondary/10 text-secondary border border-secondary/30' : 'bg-primary-light text-gray-400 border border-gray-700 hover:border-gray-600'}`}
-          >
-            <img src={user.avatar_url} alt={user.login} className="w-5 h-5 rounded" />
-            My Repos
+          <button onClick={() => setActiveOrg(null)} className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex-shrink-0 ${!activeOrg ? 'bg-secondary/10 text-secondary border-secondary/30' : 'text-gray-400 border-gray-700 hover:border-gray-600'}`}>
+            <img src={user.avatar_url} alt="" className="w-4 h-4 rounded" /> My Repos
           </button>
-          {orgs.map((org) => (
-            <button
-              key={org.id}
-              onClick={() => setActiveOrg(org.login)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex-shrink-0
-                ${activeOrg === org.login ? 'bg-secondary/10 text-secondary border border-secondary/30' : 'bg-primary-light text-gray-400 border border-gray-700 hover:border-gray-600'}`}
-            >
-              <img src={org.avatar_url} alt={org.login} className="w-5 h-5 rounded" />
-              {org.login}
+          {orgs.map(org => (
+            <button key={org.id} onClick={() => setActiveOrg(org.login)} className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex-shrink-0 ${activeOrg === org.login ? 'bg-secondary/10 text-secondary border-secondary/30' : 'text-gray-400 border-gray-700 hover:border-gray-600'}`}>
+              <img src={org.avatar_url} alt="" className="w-4 h-4 rounded" /> {org.login}
             </button>
           ))}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-gray-800 mb-6">
-        <TabBtn active={tab === 'repos'} onClick={() => setTab('repos')}>Repositories</TabBtn>
-        <TabBtn active={tab === 'activity'} onClick={() => setTab('activity')}>Activity</TabBtn>
-        <TabBtn active={tab === 'issues'} onClick={() => setTab('issues')}>Open Issues</TabBtn>
-        <TabBtn active={tab === 'top'} onClick={() => setTab('top')}>Top Repos</TabBtn>
+      <div className="flex gap-0.5 border-b border-white/[0.06] mb-6">
+        {['repos', 'activity', 'issues', 'top'].map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`px-4 py-3 text-sm capitalize ${tab === t ? 'tab-active' : 'tab-inactive'}`}>{t === 'top' ? 'Top Repos' : t}</button>
+        ))}
       </div>
 
-      {/* Tab Content */}
+      {/* Content */}
       {tab === 'repos' && (
-        <div>
-          {reposLoading ? (
-            <LoadingSpinner text="Loading repositories..." />
-          ) : (
-            <div className="grid gap-4">
-              {repos?.map((repo) => <RepoCard key={repo.id} repo={repo} />)}
-              {repos?.length === 0 && (
-                <div className="card text-center py-8">
-                  <p className="text-gray-400">No repositories found.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        reposLoading ? <LoadingSpinner /> : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {allRepos.map(r => <RepoCard key={r.id} repo={r} />)}
+          </div>
+        )
       )}
-
       {tab === 'activity' && (
-        <div className="space-y-3">
-          {recentActivity.length === 0 && (
-            <div className="card text-center py-8">
-              <p className="text-gray-400">No recent activity.</p>
+        <div className="space-y-2">
+          {(events || []).slice(0, 15).map((e, i) => (
+            <div key={`${e.id}-${i}`} className="card flex items-start gap-3">
+              <span className="text-base">{({ PushEvent: '📝', WatchEvent: '⭐', CreateEvent: '🆕', ForkEvent: '🔀', PullRequestEvent: '🔃', IssuesEvent: '🐛' })[e.type] || '📌'}</span>
+              <div><p className="text-sm text-white"><span className="font-medium">{e.type.replace('Event', '')}</span>{e.repo && <span className="text-gray-400 ml-1">in <Link to={`/${e.repo.name}`} className="text-secondary">{e.repo.name}</Link></span>}</p><p className="text-[11px] text-gray-500">{formatDate(e.created_at)}</p></div>
             </div>
-          )}
-          {recentActivity.map((event, i) => (
-            <ActivityItem key={`${event.id}-${i}`} event={event} />
           ))}
         </div>
       )}
-
       {tab === 'issues' && (
-        <div className="space-y-3">
-          {!issues || issues.length === 0 ? (
-            <div className="card text-center py-8">
-              <p className="text-gray-400">No open issues.</p>
-            </div>
-          ) : (
-            issues.map((issue) => <IssueItem key={issue.id} issue={issue} />)
-          )}
+        <div className="space-y-2">
+          {(issues || []).map(issue => (
+            <a key={issue.id} href={issue.html_url} target="_blank" rel="noopener noreferrer" className="card flex items-start gap-3 group">
+              <span className="w-3 h-3 rounded-full mt-1 bg-green-500 flex-shrink-0" />
+              <div><p className="text-sm font-medium text-white group-hover:text-secondary">{issue.title}</p><p className="text-[11px] text-gray-500">#{issue.number} • {formatDate(issue.updated_at)}</p></div>
+            </a>
+          ))}
         </div>
       )}
-
-      {tab === 'top' && (
-        <div className="grid gap-4">
-          {topRepos.map((repo) => <RepoCard key={repo.id} repo={repo} />)}
-        </div>
-      )}
+      {tab === 'top' && <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{topRepos.map(r => <RepoCard key={r.id} repo={r} />)}</div>}
     </div>
   );
 }
 
-function Stat({ label, value }) {
+function StatCard({ label, value, icon, color }) {
   return (
-    <div className="text-center">
-      <span className="text-lg font-bold text-white">{formatNumber(value)}</span>
-      <span className="text-xs text-gray-500 ml-1">{label}</span>
-    </div>
-  );
-}
-
-function TabBtn({ active, onClick, children }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-3 text-sm font-medium border-b-2 transition-all ${
-        active ? 'border-secondary text-secondary' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-600'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function ActivityItem({ event }) {
-  const icons = {
-    PushEvent: '📝',
-    WatchEvent: '⭐',
-    CreateEvent: '🆕',
-    ForkEvent: '🔀',
-    IssuesEvent: '🐛',
-    PullRequestEvent: '🔃',
-    IssueCommentEvent: '💬',
-    DeleteEvent: '🗑️',
-    ReleaseEvent: '🚀',
-  };
-
-  return (
-    <div className="card flex items-start gap-3">
-      <span className="text-lg flex-shrink-0">{icons[event.type] || '📌'}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-white">
-          <span className="font-medium">{event.type.replace('Event', '')}</span>
-          {event.repo && (
-            <span className="text-gray-400 ml-1">
-              in <Link to={`/${event.repo.name.split('/')[0]}`} className="text-secondary hover:underline">{event.repo.name}</Link>
-            </span>
-          )}
-        </p>
-        <p className="text-xs text-gray-500 mt-0.5">{formatDate(event.created_at)}</p>
-      </div>
-    </div>
-  );
-}
-
-function IssueItem({ issue }) {
-  const repoName = issue.repository_url?.split('/').slice(-2).join('/') || '';
-  return (
-    <div className="card">
-      <div className="flex items-start gap-3">
-        <span className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 ${issue.pull_request ? 'bg-purple-500' : 'bg-green-500'}`} />
-        <div className="flex-1 min-w-0">
-          <a href={issue.html_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white hover:text-secondary transition-colors">
-            {issue.title}
-          </a>
-          <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-            <span>{repoName}</span>
-            <span>#{issue.number}</span>
-            <span>{formatDate(issue.updated_at)}</span>
-            {issue.labels?.slice(0, 3).map((label) => (
-              <span key={label.id} className="px-1.5 py-0.5 rounded text-xs" style={{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }}>
-                {label.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="card-glass flex flex-col items-center justify-center py-6">
+      <span className={`text-2xl ${color}`}>{icon}</span>
+      <p className="text-2xl font-bold text-white mt-2">{value}</p>
+      <p className="text-[11px] text-gray-500">{label}</p>
     </div>
   );
 }

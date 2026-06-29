@@ -10,13 +10,12 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'query': ['@tanstack/react-query'],
-          'codemirror': ['@uiw/react-codemirror', '@codemirror/theme-one-dark'],
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          'editor-vendor': ['@uiw/react-codemirror', '@codemirror/theme-one-dark'],
+          'motion': ['framer-motion'],
         },
       },
     },
   },
-  server: {
-    port: 5173,
-  },
+  server: { port: 5173 },
 });

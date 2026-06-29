@@ -5,16 +5,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
-import { SidebarProvider } from './context/SidebarContext';
+import { CMSProvider } from './context/CMSContext';
 import './index.css';
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      retry: 2,
-    },
-  },
+  defaultOptions: { queries: { staleTime: 1000 * 60 * 5, retry: 2 } },
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -23,9 +18,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <SidebarProvider>
+            <CMSProvider>
               <App />
-            </SidebarProvider>
+            </CMSProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

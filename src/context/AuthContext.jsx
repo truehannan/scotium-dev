@@ -8,11 +8,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('github_token'));
   const [loading, setLoading] = useState(!!localStorage.getItem('github_token'));
 
-  useEffect(() => {
-    if (token) {
-      fetchUser();
-    }
-  }, [token]);
+  useEffect(() => { if (token) fetchUser(); }, [token]);
 
   const fetchUser = async () => {
     try {
@@ -20,31 +16,18 @@ export function AuthProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data);
-    } catch (err) {
-      console.error('Failed to fetch user:', err);
-      logout();
-    } finally {
-      setLoading(false);
-    }
+    } catch { logout(); }
+    finally { setLoading(false); }
   };
 
   const login = () => {
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID || 'Iv23liQd2lcWRmtGkYVi';
     const redirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI || 'https://scotium.pages.dev/auth/callback';
-    const scope = 'public_repo,user:email,read:user,repo';
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=public_repo,user:email,read:user,repo`;
   };
 
-  const logout = () => {
-    localStorage.removeItem('github_token');
-    setToken(null);
-    setUser(null);
-  };
-
-  const setAuthToken = (newToken) => {
-    localStorage.setItem('github_token', newToken);
-    setToken(newToken);
-  };
+  const logout = () => { localStorage.removeItem('github_token'); setToken(null); setUser(null); };
+  const setAuthToken = (t) => { localStorage.setItem('github_token', t); setToken(t); };
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, logout, setAuthToken }}>
@@ -53,8 +36,8 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
-}
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+};
