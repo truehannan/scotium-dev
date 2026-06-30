@@ -85,7 +85,7 @@ export default function DashboardPage() {
 
       {/* Tabs */}
       <div className="flex gap-0.5 border-b border-white/[0.06] mb-6">
-        {['repos', 'activity', 'issues', 'top'].map(t => (
+        {['repos', 'activity', 'issues', 'top', 'tools'].map(t => (
           <button key={t} onClick={() => setTab(t)} className={`px-4 py-3 text-sm capitalize ${tab === t ? 'tab-active' : 'tab-inactive'}`}>{t === 'top' ? 'Top Repos' : t}</button>
         ))}
       </div>
@@ -119,6 +119,81 @@ export default function DashboardPage() {
         </div>
       )}
       {tab === 'top' && <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{topRepos.map(r => <RepoCard key={r.id} repo={r} />)}</div>}
+
+      {/* TOOLS TAB */}
+      {tab === 'tools' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Repo Health Summary */}
+          <div className="card col-span-full">
+            <h3 className="text-sm font-semibold text-white mb-3">📊 Repo Health Summary</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead><tr className="text-gray-500 text-left"><th className="pb-2">Repo</th><th className="pb-2">Stars</th><th className="pb-2">Issues</th><th className="pb-2">Language</th><th className="pb-2">Updated</th></tr></thead>
+                <tbody>
+                  {allRepos.slice(0, 10).map(r => (
+                    <tr key={r.id} className="border-t border-gray-800/40">
+                      <td className="py-2"><Link to={`/${r.full_name}`} className="text-secondary hover:underline">{r.name}</Link>{r.private && <span className="ml-1 text-[9px] text-yellow-400">🔒</span>}</td>
+                      <td className="py-2 text-gray-400">★ {formatNum(r.stargazers_count)}</td>
+                      <td className="py-2 text-gray-400">{r.open_issues_count}</td>
+                      <td className="py-2 text-gray-400">{r.language || '—'}</td>
+                      <td className="py-2 text-gray-500">{formatDate(r.updated_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Stale Repos Alert */}
+          <div className="card">
+            <h3 className="text-sm font-semibold text-white mb-3">⚠️ Stale Repos</h3>
+            <p className="text-[10px] text-gray-500 mb-2">Repos with no updates in 90+ days</p>
+            {(() => {
+              const stale = allRepos.filter(r => (Date.now() - new Date(r.pushed_at)) / 86400000 > 90);
+              return stale.length > 0 ? (
+                <div className="space-y-1.5">{stale.slice(0, 5).map(r => (
+                  <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-red-500/5 border border-red-500/10">
+                    <Link to={`/${r.full_name}`} className="text-xs text-gray-300 hover:text-secondary">{r.name}</Link>
+                    <span className="text-[10px] text-red-400">{Math.floor((Date.now() - new Date(r.pushed_at)) / 86400000)}d inactive</span>
+                  </div>
+                ))}</div>
+              ) : <p className="text-xs text-green-400">✓ All repos are active!</p>;
+            })()}
+          </div>
+
+          {/* Open PR Tracker */}
+          <div className="card">
+            <h3 className="text-sm font-semibold text-white mb-3">🔃 Open PRs</h3>
+            <p className="text-[10px] text-gray-500 mb-2">Your open pull requests across repos</p>
+            {issues?.filter(i => i.pull_request).length > 0 ? (
+              <div className="space-y-1.5">{issues.filter(i => i.pull_request).slice(0, 5).map(pr => (
+                <a key={pr.id} href={pr.html_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.03] group">
+                  <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                  <span className="text-xs text-gray-300 group-hover:text-secondary truncate">{pr.title}</span>
+                </a>
+              ))}</div>
+            ) : <p className="text-xs text-gray-500">No open PRs</p>}
+          </div>
+
+          {/* Star Trends */}
+          <div className="card col-span-full">
+            <h3 className="text-sm font-semibold text-white mb-3">⭐ Star Leaders</h3>
+            <p className="text-[10px] text-gray-500 mb-2">Your repos ranked by stars</p>
+            <div className="space-y-1.5">
+              {topRepos.map((r, i) => (
+                <div key={r.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.02]">
+                  <span className="text-xs text-gray-500 font-bold w-5">#{i + 1}</span>
+                  <Link to={`/${r.full_name}`} className="text-xs text-gray-300 hover:text-secondary flex-1 truncate">{r.name}</Link>
+                  <div className="flex-shrink-0 flex items-center gap-2">
+                    <div className="w-20 h-1.5 bg-gray-800 rounded-full overflow-hidden"><div className="h-full bg-secondary rounded-full" style={{ width: `${(r.stargazers_count / Math.max(topRepos[0]?.stargazers_count || 1, 1)) * 100}%` }} /></div>
+                    <span className="text-[10px] text-yellow-400 w-10 text-right">★ {formatNum(r.stargazers_count)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

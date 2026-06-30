@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import SEO from '../components/ui/SEO';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import MarkdownReadme from '../components/ui/MarkdownReadme';
+import RepoToolsPanel from '../components/ui/RepoToolsPanel';
 import { useState } from 'react';
 
 export default function RepoDetailPage() {
@@ -98,112 +99,104 @@ export default function RepoDetailPage() {
         ))}
       </div>
 
-      {/* CODE TAB (includes health pulse) */}
+      {/* CODE TAB (includes analysis tools) */}
       {activeTab === 'code' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            {/* File tree */}
-            {contents && Array.isArray(contents) && (
-              <div className="card">
-                <div className="space-y-0.5">
-                  {contents.sort((a, b) => (a.type === 'dir' ? -1 : 1) - (b.type === 'dir' ? -1 : 1) || a.name.localeCompare(b.name)).map(item => (
-                    <div key={item.sha} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/[0.02] text-sm">
-                      {item.type === 'dir' ? <span className="text-accent-blue">📁</span> : <span className="text-gray-500">📄</span>}
-                      <span className="text-gray-300">{item.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* README */}
-            {readme && <MarkdownReadme html={readme} />}
-          </div>
+        <>
+          {/* Tools slider: at TOP on mobile, sidebar on desktop */}
+          <RepoToolsPanel
+            repoData={repoData}
+            commits={commits}
+            contributors={contributors}
+            issues={issues}
+            pulls={pulls}
+            releases={releases}
+            languages={languages}
+          />
 
-          {/* Right sidebar: Health Pulse + Info */}
-          <div className="space-y-4">
-            {/* Health Score */}
-            <div className="card-glass text-center">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Health Score</p>
-              <div className="relative w-20 h-20 mx-auto">
-                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a2a" strokeWidth="8" />
-                  <circle cx="50" cy="50" r="40" fill="none" stroke={scoreColor} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${healthScore * 2.51} 251`} />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-black" style={{ color: scoreColor }}>{healthScore}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              {/* File tree */}
+              {contents && Array.isArray(contents) && (
+                <div className="card">
+                  <div className="space-y-0.5">
+                    {contents.sort((a, b) => (a.type === 'dir' ? -1 : 1) - (b.type === 'dir' ? -1 : 1) || a.name.localeCompare(b.name)).map(item => (
+                      <div key={item.sha} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/[0.02] text-sm">
+                        {item.type === 'dir' ? <span className="text-accent-blue">📁</span> : <span className="text-gray-500">📄</span>}
+                        <span className="text-gray-300">{item.name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <p className="text-xs mt-2" style={{ color: scoreColor }}>{healthScore >= 75 ? 'Excellent' : healthScore >= 50 ? 'Good' : 'Needs Work'}</p>
-              <div className="grid grid-cols-2 gap-2 mt-3 text-[10px]">
-                <MiniMetric label="Commits" value={commitScore} />
-                <MiniMetric label="Bus Factor" value={busFactor} />
-                <MiniMetric label="Issues" value={issueScore} />
-                <MiniMetric label="README" value={readmeScore} />
-              </div>
+              )}
+              {/* README */}
+              {readme && <MarkdownReadme html={readme} />}
             </div>
 
-            {/* Languages */}
-            {langBreakdown.length > 0 && (
+            {/* Desktop sidebar: About + Contributors + Badges */}
+            <div className="hidden lg:block space-y-4">
+              {/* Languages */}
+              {langBreakdown.length > 0 && (
+                <div className="card">
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Languages</h3>
+                  <div className="flex rounded-full h-2 overflow-hidden mb-2">
+                    {langBreakdown.map(([lang, bytes]) => (
+                      <div key={lang} style={{ width: `${(bytes / totalBytes) * 100}%`, backgroundColor: LANG_COLORS[lang] || '#6b7280' }} title={lang} />
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    {langBreakdown.map(([lang, bytes]) => (
+                      <div key={lang} className="flex items-center justify-between text-[11px]">
+                        <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: LANG_COLORS[lang] || '#6b7280' }} />{lang}</span>
+                        <span className="text-gray-500">{((bytes / totalBytes) * 100).toFixed(1)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* About */}
               <div className="card">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Languages</h3>
-                <div className="flex rounded-full h-2 overflow-hidden mb-2">
-                  {langBreakdown.map(([lang, bytes]) => (
-                    <div key={lang} style={{ width: `${(bytes / totalBytes) * 100}%`, backgroundColor: LANG_COLORS[lang] || '#6b7280' }} title={lang} />
-                  ))}
-                </div>
-                <div className="space-y-1">
-                  {langBreakdown.map(([lang, bytes]) => (
-                    <div key={lang} className="flex items-center justify-between text-[11px]">
-                      <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: LANG_COLORS[lang] || '#6b7280' }} />{lang}</span>
-                      <span className="text-gray-500">{((bytes / totalBytes) * 100).toFixed(1)}%</span>
-                    </div>
-                  ))}
+                <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">About</h3>
+                <div className="space-y-1.5 text-xs text-gray-400">
+                  {repoData.homepage && <a href={repoData.homepage} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline block truncate">{repoData.homepage}</a>}
+                  <div>Branch: <code className="text-secondary">{repoData.default_branch}</code></div>
+                  <div>Created {formatDate(repoData.created_at)}</div>
+                  {repoData.topics?.length > 0 && <div className="flex flex-wrap gap-1 mt-2">{repoData.topics.map(t => <span key={t} className="badge bg-secondary/10 text-secondary">{t}</span>)}</div>}
                 </div>
               </div>
-            )}
 
-            {/* About */}
-            <div className="card">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">About</h3>
-              <div className="space-y-1.5 text-xs text-gray-400">
-                {repoData.homepage && <a href={repoData.homepage} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline block truncate">{repoData.homepage}</a>}
-                <div>Branch: <code className="text-secondary">{repoData.default_branch}</code></div>
-                <div>Created {formatDate(repoData.created_at)}</div>
-                {repoData.topics?.length > 0 && <div className="flex flex-wrap gap-1 mt-2">{repoData.topics.map(t => <span key={t} className="badge bg-secondary/10 text-secondary">{t}</span>)}</div>}
-              </div>
-            </div>
+              {/* Contributors */}
+              {contributors?.length > 0 && (
+                <div className="card">
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Contributors</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {contributors.slice(0, 12).map(c => (
+                      <Link key={c.id} to={`/${c.login}`} title={`${c.login} (${c.contributions})`}>
+                        <img src={c.avatar_url} alt="" className="w-7 h-7 rounded-full hover:ring-2 hover:ring-secondary/30" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            {/* Contributors */}
-            {contributors?.length > 0 && (
+              {/* Badges */}
               <div className="card">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Contributors</h3>
-                <div className="flex flex-wrap gap-1">
-                  {contributors.slice(0, 12).map(c => (
-                    <Link key={c.id} to={`/${c.login}`} title={`${c.login} (${c.contributions})`}>
-                      <img src={c.avatar_url} alt="" className="w-7 h-7 rounded-full hover:ring-2 hover:ring-secondary/30" />
-                    </Link>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">README Badges</h3>
+                <div className="space-y-1.5">
+                  {[
+                    `![Stars](https://img.shields.io/github/stars/${owner}/${repo}?style=flat-square&color=00bf63)`,
+                    `![Issues](https://img.shields.io/github/issues/${owner}/${repo}?style=flat-square)`,
+                    `![License](https://img.shields.io/github/license/${owner}/${repo}?style=flat-square)`,
+                  ].map(md => (
+                    <button key={md} onClick={() => copyBadge(md)} className={`w-full text-left p-1.5 rounded bg-primary border border-gray-800/40 text-[10px] font-mono text-gray-500 truncate hover:text-gray-300 transition-colors ${copiedBadge === md ? 'border-secondary/40 text-secondary' : ''}`}>
+                      {copiedBadge === md ? '✓ Copied!' : md.slice(0, 60) + '...'}
+                    </button>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Badges */}
-            <div className="card">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">README Badges</h3>
-              <div className="space-y-1.5">
-                {[
-                  `![Stars](https://img.shields.io/github/stars/${owner}/${repo}?style=flat-square&color=00bf63)`,
-                  `![Issues](https://img.shields.io/github/issues/${owner}/${repo}?style=flat-square)`,
-                  `![License](https://img.shields.io/github/license/${owner}/${repo}?style=flat-square)`,
-                ].map(md => (
-                  <button key={md} onClick={() => copyBadge(md)} className={`w-full text-left p-1.5 rounded bg-primary border border-gray-800/40 text-[10px] font-mono text-gray-500 truncate hover:text-gray-300 transition-colors ${copiedBadge === md ? 'border-secondary/40 text-secondary' : ''}`}>
-                    {copiedBadge === md ? '✓ Copied!' : md.slice(0, 60) + '...'}
-                  </button>
-                ))}
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* ISSUES TAB */}

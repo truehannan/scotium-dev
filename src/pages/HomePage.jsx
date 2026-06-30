@@ -9,6 +9,7 @@ import RepoCard from '../components/ui/RepoCard';
 import BannerAd from '../components/ui/BannerAd';
 import SponsoredRepos from '../components/ui/SponsoredRepos';
 import SEO from '../components/ui/SEO';
+import DiscoveryTools from '../components/ui/DiscoveryTools';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 export default function HomePage() {
@@ -55,6 +56,9 @@ export default function HomePage() {
         <div className="px-4 sm:px-6">
           <BannerAd slot="home-mid" />
         </div>
+
+        {/* Discovery Tools */}
+        <DiscoveryTools token={token} />
 
         {/* Famous Contributors */}
         {contributors.length > 0 && (

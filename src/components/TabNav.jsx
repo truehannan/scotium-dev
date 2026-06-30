@@ -6,6 +6,7 @@ const TABS = [
   { path: '/', label: 'Trending' },
   { path: '/explore', label: 'Explore' },
   { path: '/components', label: 'Components' },
+  { path: '/compare', label: 'Compare' },
   { path: '/dashboard', label: 'Dashboard', auth: true },
 ];
 

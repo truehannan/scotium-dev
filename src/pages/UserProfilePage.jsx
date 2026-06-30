@@ -7,6 +7,7 @@ import RepoCard from '../components/ui/RepoCard';
 import SEO from '../components/ui/SEO';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import MarkdownReadme from '../components/ui/MarkdownReadme';
+import ProfileToolsPanel from '../components/ui/ProfileToolsPanel';
 
 export default function UserProfilePage() {
   const { username } = useParams();
@@ -53,11 +54,17 @@ export default function UserProfilePage() {
                 <div className="flex flex-wrap gap-1.5">{orgs.map(o => <Link key={o.id} to={`/orgs/${o.login}`}><img src={o.avatar_url} alt={o.login} className="w-7 h-7 rounded-md hover:ring-2 hover:ring-secondary/30" title={o.login} /></Link>)}</div>
               </div>
             )}
+            {/* Profile Analysis Tools (desktop) */}
+            <ProfileToolsPanel user={user} repos={repos} orgs={orgs} />
           </div>
         </aside>
 
         {/* Main content with tabs */}
         <div className="flex-1 min-w-0">
+          {/* Profile Analysis Tools (mobile - at top) */}
+          <div className="lg:hidden">
+            <ProfileToolsPanel user={user} repos={repos} orgs={orgs} />
+          </div>
           {/* Tabs */}
           <div className="flex gap-0.5 border-b border-white/[0.06] mb-6">
             <button onClick={() => setTab('overview')} className={`px-4 py-3 text-sm ${tab === 'overview' ? 'tab-active' : 'tab-inactive'}`}>Overview</button>
