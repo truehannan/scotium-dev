@@ -111,9 +111,9 @@ export default function HeroMatrixRain() {
       <div className="relative z-10 text-center max-w-3xl px-6">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight font-mono">
-            Discover.<br />
-            Contribute.<br />
-            Build.
+            Github Powers<br />
+            34 tools, Discovery engine<br />
+            and much more...
           </h1>
         </motion.div>
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="mt-6 text-lg text-gray-400 max-w-xl mx-auto">
