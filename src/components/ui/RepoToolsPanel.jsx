@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Heart, Star, GitCommit, Zap, Bug, Users, Tag, GitFork, Scale, HardDrive, Layers, FileText } from 'lucide-react';
+import { VscHeart, VscStarFull, VscGitCommit, VscSymbolEvent, VscBug, VscOrganization, VscTag, VscRepoForked, VscLaw, VscDatabase, VscLayers, VscFile } from 'react-icons/vsc';
 import { formatNum } from '../../utils/github';
 
 export default function RepoToolsPanel({ repoData, commits, contributors, issues, pulls, releases, languages }) {
@@ -7,7 +7,6 @@ export default function RepoToolsPanel({ repoData, commits, contributors, issues
 
   return (
     <>
-      {/* Mobile: horizontal compact scroll */}
       <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto">
         <div className="flex gap-2 pb-2 min-w-max">
           {tools.map(t => (
@@ -19,8 +18,6 @@ export default function RepoToolsPanel({ repoData, commits, contributors, issues
           ))}
         </div>
       </div>
-
-      {/* Desktop: compact 4-col grid */}
       <div className="hidden lg:grid grid-cols-4 gap-1.5 mb-4">
         {tools.map(t => (
           <div key={t.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/[0.02] border border-white/[0.03]">
@@ -43,8 +40,6 @@ function computeTools(repo, commits, contributors, issues, pulls, releases, lang
   const commitLabel = daysSinceCommit === null ? 'N/A' : daysSinceCommit === 0 ? 'Today' : `${daysSinceCommit}d`;
   const openIssues = repo.open_issues_count || 0;
   const contribCount = contributors?.length || 0;
-  const topContrib = contributors?.[0]?.contributions || 0;
-  const totalContribs = contributors?.reduce((s, c) => s + c.contributions, 0) || 1;
   const busFactor = contribCount >= 10 ? 'Low' : contribCount >= 5 ? 'Med' : contribCount >= 2 ? 'High' : 'Crit';
   const busColor = contribCount >= 10 ? 'text-green-400' : contribCount >= 5 ? 'text-yellow-400' : 'text-red-400';
   const releaseCount = releases?.length || 0;
@@ -57,18 +52,18 @@ function computeTools(repo, commits, contributors, issues, pulls, releases, lang
   const healthScore = calcHealth(daysSinceCommit, contribCount, openIssues, releaseCount, stars);
 
   return [
-    { id: 'health', icon: Heart, label: 'Health', value: `${healthScore}/100`, color: healthScore >= 70 ? 'text-green-400' : healthScore >= 40 ? 'text-yellow-400' : 'text-red-400' },
-    { id: 'stars', icon: Star, label: 'Stars', value: formatNum(stars), color: 'text-yellow-400' },
-    { id: 'commits', icon: GitCommit, label: 'Last Commit', value: commitLabel, color: daysSinceCommit !== null && daysSinceCommit < 7 ? 'text-green-400' : 'text-yellow-400' },
-    { id: 'pr-speed', icon: Zap, label: 'PR Speed', value: 'N/A', color: 'text-accent-cyan' },
-    { id: 'issues', icon: Bug, label: 'Issues', value: `${openIssues}`, color: openIssues < 10 ? 'text-green-400' : 'text-yellow-400' },
-    { id: 'bus', icon: Users, label: 'Bus Factor', value: busFactor, color: busColor },
-    { id: 'releases', icon: Tag, label: 'Releases', value: `${releaseCount}`, color: releaseCount > 0 ? 'text-green-400' : 'text-gray-400' },
-    { id: 'forks', icon: GitFork, label: 'Forks', value: formatNum(forks), color: 'text-accent-blue' },
-    { id: 'license', icon: Scale, label: 'License', value: license, color: license !== 'None' ? 'text-green-400' : 'text-red-400' },
-    { id: 'size', icon: HardDrive, label: 'Size', value: sizeLabel, color: 'text-accent-purple' },
-    { id: 'stack', icon: Layers, label: 'Stack', value: techStack, color: 'text-white' },
-    { id: 'deps', icon: FileText, label: 'Langs', value: `${langKeys.length}`, color: 'text-gray-300' },
+    { id: 'health', icon: VscHeart, label: 'Health', value: `${healthScore}/100`, color: healthScore >= 70 ? 'text-green-400' : healthScore >= 40 ? 'text-yellow-400' : 'text-red-400' },
+    { id: 'stars', icon: VscStarFull, label: 'Stars', value: formatNum(stars), color: 'text-yellow-400' },
+    { id: 'commits', icon: VscGitCommit, label: 'Last Commit', value: commitLabel, color: daysSinceCommit !== null && daysSinceCommit < 7 ? 'text-green-400' : 'text-yellow-400' },
+    { id: 'pr-speed', icon: VscSymbolEvent, label: 'PR Speed', value: 'N/A', color: 'text-accent-cyan' },
+    { id: 'issues', icon: VscBug, label: 'Issues', value: `${openIssues}`, color: openIssues < 10 ? 'text-green-400' : 'text-yellow-400' },
+    { id: 'bus', icon: VscOrganization, label: 'Bus Factor', value: busFactor, color: busColor },
+    { id: 'releases', icon: VscTag, label: 'Releases', value: `${releaseCount}`, color: releaseCount > 0 ? 'text-green-400' : 'text-gray-400' },
+    { id: 'forks', icon: VscRepoForked, label: 'Forks', value: formatNum(forks), color: 'text-accent-blue' },
+    { id: 'license', icon: VscLaw, label: 'License', value: license, color: license !== 'None' ? 'text-green-400' : 'text-red-400' },
+    { id: 'size', icon: VscDatabase, label: 'Size', value: sizeLabel, color: 'text-accent-purple' },
+    { id: 'stack', icon: VscLayers, label: 'Stack', value: techStack, color: 'text-white' },
+    { id: 'deps', icon: VscFile, label: 'Langs', value: `${langKeys.length}`, color: 'text-gray-300' },
   ];
 }
 

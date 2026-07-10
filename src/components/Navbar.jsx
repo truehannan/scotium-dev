@@ -42,9 +42,13 @@ export default function Navbar() {
             <span className="flex-1 text-left">Search...</span>
             <kbd className="text-[10px] border border-gray-700 rounded px-1.5 py-0.5 text-gray-600">⌘K</kbd>
           </button>
-
-          {/* Right */}
           <div className="flex items-center gap-3">
+            {/* GitHub Star */}
+            <a href="https://github.com/truehannan/scotium-dev" target="_blank" rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[11px] text-gray-400 hover:border-secondary/30 hover:text-secondary transition-all">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568L24 9.306l-6 5.862 1.416 8.245L12 19.446l-7.416 3.967L6 15.168 0 9.306l8.332-1.151z"/></svg>
+              Star on GitHub
+            </a>
             {/* Mobile search button */}
             <button onClick={() => setSearchOpen(true)} className="sm:hidden p-2 text-gray-400 hover:text-white rounded-lg">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

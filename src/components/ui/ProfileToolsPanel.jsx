@@ -1,4 +1,4 @@
-import { Star, GitFork, BarChart3, Calendar, Package, Building, Trophy, Code } from 'lucide-react';
+import { VscStarFull, VscRepoForked, VscGraph, VscCalendar, VscPackage, VscOrganization, VscMortarBoard, VscCode } from 'react-icons/vsc';
 import { formatNum } from '../../utils/github';
 
 export default function ProfileToolsPanel({ user, repos, orgs }) {
@@ -14,14 +14,14 @@ export default function ProfileToolsPanel({ user, repos, orgs }) {
   const mostStarred = allRepos.length ? [...allRepos].sort((a, b) => b.stargazers_count - a.stargazers_count)[0] : null;
 
   const tools = [
-    { Icon: Star, label: 'Total Stars', value: formatNum(totalStars), color: 'text-yellow-400' },
-    { Icon: GitFork, label: 'Total Forks', value: formatNum(totalForks), color: 'text-accent-blue' },
-    { Icon: BarChart3, label: 'Follower Ratio', value: `${ratio}x`, color: parseFloat(ratio) >= 2 ? 'text-green-400' : 'text-gray-300' },
-    { Icon: Calendar, label: 'Account Age', value: `${accountAge}y`, color: 'text-accent-purple' },
-    { Icon: Package, label: 'Repositories', value: String(user.public_repos), color: 'text-white' },
-    { Icon: Building, label: 'Organizations', value: String(orgs?.length || 0), color: 'text-accent-cyan' },
-    { Icon: Trophy, label: 'Top Repo', value: mostStarred?.name?.slice(0, 12) || 'N/A', color: 'text-secondary' },
-    { Icon: Code, label: 'Top Lang', value: topLangs[0]?.[0] || 'N/A', color: 'text-white' },
+    { Icon: VscStarFull, label: 'Total Stars', value: formatNum(totalStars), color: 'text-yellow-400' },
+    { Icon: VscRepoForked, label: 'Total Forks', value: formatNum(totalForks), color: 'text-accent-blue' },
+    { Icon: VscGraph, label: 'Follower Ratio', value: `${ratio}x`, color: parseFloat(ratio) >= 2 ? 'text-green-400' : 'text-gray-300' },
+    { Icon: VscCalendar, label: 'Account Age', value: `${accountAge}y`, color: 'text-accent-purple' },
+    { Icon: VscPackage, label: 'Repositories', value: String(user.public_repos), color: 'text-white' },
+    { Icon: VscOrganization, label: 'Organizations', value: String(orgs?.length || 0), color: 'text-accent-cyan' },
+    { Icon: VscMortarBoard, label: 'Top Repo', value: mostStarred?.name?.slice(0, 12) || 'N/A', color: 'text-secondary' },
+    { Icon: VscCode, label: 'Top Lang', value: topLangs[0]?.[0] || 'N/A', color: 'text-white' },
   ];
 
   return (

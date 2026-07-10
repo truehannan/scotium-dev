@@ -126,7 +126,10 @@ export default function RepoDetailPage() {
                   <div className="space-y-0.5">
                     {contents.sort((a, b) => (a.type === 'dir' ? -1 : 1) - (b.type === 'dir' ? -1 : 1) || a.name.localeCompare(b.name)).map(item => (
                       <div key={item.sha} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/[0.02] text-sm">
-                        
+                        {item.type === 'dir'
+                          ? <svg className="w-4 h-4 text-accent-blue flex-shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z"/></svg>
+                          : <svg className="w-4 h-4 text-gray-500 flex-shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25V4.664a.25.25 0 00-.073-.177l-2.914-2.914a.25.25 0 00-.177-.073H3.75z"/></svg>
+                        }
                         <span className="text-gray-300">{item.name}</span>
                       </div>
                     ))}
