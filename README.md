@@ -1,150 +1,193 @@
 <p align="center">
-  <img src="public/logo.png" alt="Scotium" height="40" />
+  <img src="public/favicon.ico" alt="Scotium" width="48" height="48" />
+</p>
+
+<h1 align="center">Scotium</h1>
+
+<p align="center">
+  <strong>The GitHub Power-User Platform</strong>
 </p>
 
 <p align="center">
-  <strong>The GitHub Power-User Platform</strong><br/>
-  Analyze repos, compare projects, discover trends, and contribute — all in one place.
+  <a href="https://scotium.pages.dev">
+    <img src="https://img.shields.io/badge/Live-scotium.pages.dev-00bf63?style=for-the-badge&logo=cloudflarepages&logoColor=white" alt="Live" />
+  </a>
 </p>
 
 <p align="center">
-  <a href="https://scotium.pages.dev">Live Demo</a> &bull;
-  <a href="https://scotium.pages.dev/about">About</a> &bull;
-  <a href="https://scotium.pages.dev/components">Components</a> &bull;
-  <a href="https://scotium.pages.dev/compare">Compare</a>
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
+  <img src="https://img.shields.io/badge/Cloudflare-Pages-F38020?style=flat-square&logo=cloudflare&logoColor=white" />
+  <img src="https://img.shields.io/badge/D1-SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-00bf63?style=flat-square" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18-00bf63?style=flat-square&logo=react" alt="React" />
-  <img src="https://img.shields.io/badge/Vite-5-00bf63?style=flat-square&logo=vite" alt="Vite" />
-  <img src="https://img.shields.io/badge/TailwindCSS-3-00bf63?style=flat-square&logo=tailwindcss" alt="Tailwind" />
-  <img src="https://img.shields.io/badge/Cloudflare_Pages-Deployed-00bf63?style=flat-square&logo=cloudflarepages" alt="Cloudflare" />
+  <a href="https://scotium.pages.dev/about">About</a> &nbsp;&bull;&nbsp;
+  <a href="https://scotium.pages.dev/components">Components</a> &nbsp;&bull;&nbsp;
+  <a href="https://scotium.pages.dev/compare">Compare</a> &nbsp;&bull;&nbsp;
+  <a href="https://scotium.pages.dev/explore">Explore</a>
 </p>
 
 ---
 
-## What is Scotium?
+<p align="center">
+  <img src="public/screenshot.png" alt="Scotium Screenshot" width="800" />
+</p>
 
-Scotium is not another GitHub clone. It's a **power-user dashboard** that gives you tools and insights GitHub doesn't surface easily:
+---
 
-- **Repository Health Scores** — Instant 0-100 health assessment for any repo
-- **Side-by-side Comparisons** — Compare repos or users with visual metrics
-- **README Component Marketplace** — 30 ready-to-copy components for your profile
-- **Built-in Code Editor** — Edit files, create branches, and open PRs directly
-- **Discovery Engine** — Find rising stars, undiscovered gems, and active forks
-- **CMS-powered Ads** — Managed announcement bars, banners, and sponsored repos
+## Why Scotium?
+
+GitHub shows you data. **Scotium gives you insights.**
+
+| GitHub | Scotium |
+|--------|---------|
+| Raw star count | Health Score (0-100) combining 6 metrics |
+| Contributor list | Bus Factor risk analysis |
+| Issue count | Issue resolution rate + response time |
+| No comparison tool | Side-by-side Repo vs Repo, User vs User |
+| No README builder | 30 ready-to-copy profile components |
+| Basic code view | Built-in editor with PR creation |
+| No discovery engine | Rising Stars, Gems, Fork Radar |
 
 ---
 
 ## Features
 
-### Homepage
-- Full-screen **Matrix Rain** hero (Canvas 2D, green code cascade with hover spotlight)
-- **Peekaboo-style** trending repos carousel
-- **Popular developers** horizontal scroll
-- **Discovery Tools**: Rising Stars, Undiscovered Gems, Most Forked, Active Giants
-- CMS-managed announcements, banners, sponsored repos
+```
+34 Analysis Tools  ·  30 README Components  ·  Built-in Code Editor
+Discovery Engine   ·  Compare Tool          ·  CMS Admin Panel
+```
 
-### Repository Detail (`/:owner/:repo`)
-- **12 Analysis Tools** as horizontal slider (mobile) or sidebar (desktop):
-  - Health Score, Stars, Last Commit, PR Merge Speed, Issue Health
-  - Bus Factor, Releases, Fork Activity, License, Repo Size, Tech Stack, Dependencies
-- File tree browser with folder/file icons
-- GitHub-styled README rendering (headings, code blocks, tables, images, badges)
-- Tabs: Code, Issues, Pull Requests, Discussions, Actions, Releases, Insights, Security
-- Copy-paste README badges
-- "Open in Editor" button
+### Repository Analysis (12 tools)
 
-### Code Editor (`/:owner/:repo/editor`)
-- Browse repository file tree
-- Select or create branches
-- Edit files with syntax highlighting (JS, TS, Python, Rust, Go, Java, C++, HTML, CSS, JSON)
-- Commit changes with message
-- Create Pull Requests with title and description
-- Full diff awareness (modified indicator)
+> Horizontal slider on mobile, sidebar on desktop
 
-### User Profiles (`/:username`)
-- **8 Profile Analysis Tools**: Total Stars, Forks, Follower Ratio, Account Age, Repos, Orgs, Top Repo, Top Languages
-- Profile README (fetched from `username/username` repo)
-- Tabs: Overview (README) + Repositories
-- Organization memberships
+```
+Health Score  ·  Stars  ·  Last Commit  ·  PR Merge Speed
+Issue Health  ·  Bus Factor  ·  Releases  ·  Fork Activity
+License  ·  Repo Size  ·  Tech Stack  ·  Dependencies
+```
 
-### Compare Page (`/compare`)
-- **Repo vs Repo**: Stars, Forks, Issues, Watchers, Size, Contributors, Languages — with visual progress bars
-- **User vs User**: Followers, Following, Public Repos, Gists — with winner highlights
+### Profile Analysis (8 tools)
 
-### Components Marketplace (`/components`)
-- **15 User/Org components**: Stats Card, Streak, Top Languages, Trophy, Activity Graph, Profile Views, Typing SVG, Snake Graph, Summary Cards, Social Badges, and more
-- **15 Repository components**: Star History, Badges (stars/forks/issues/license/size/commits), Repo Pin Card, Build Status, Downloads, and more
-- `{{username}}` and `{{owner}}/{{repo}}` placeholder system
-- Live image preview
-- One-click copy to clipboard
+```
+Total Stars  ·  Total Forks  ·  Follower Ratio  ·  Account Age
+Repositories  ·  Organizations  ·  Top Repo  ·  Top Languages
+```
 
-### Dashboard (`/dashboard`) — Authenticated
-- All repositories including **private repos**
-- Total stars, forks, private repo count
-- Language distribution chart
-- Organization switcher
-- Tabs: Repos, Activity, Issues, Top Repos, **Tools**
-- Dashboard Tools: Repo Health Summary table, Stale Repos Alert, Open PR Tracker, Star Leaders
+### Discovery (4 engines)
 
-### CMS Admin (`/admin/cms`) — Admin Only
-- Manage top announcements (colored gradient bars)
-- Manage between-section banner ads (image + text with gradient fade)
-- Manage sponsored repository cards
-- All images via URL links (no uploads)
-- Overview analytics (D1-connected)
+```
+🚀 Rising Stars — new repos gaining traction this week
+💎 Undiscovered Gems — active repos with <200 stars
+🔀 Most Forked — new repos being forked rapidly
+🔥 Active Giants — popular repos with recent commits
+```
+
+### Dashboard Tools (4)
+
+```
+📊 Repo Health Summary — all your repos scored in a table
+⚠️ Stale Repos Alert — repos inactive 90+ days
+🔃 Open PR Tracker — all your PRs across repos
+⭐ Star Leaders — ranked repos with sparkbars
+```
+
+---
+
+## README Components
+
+**30 hardcoded components** split into two categories:
+
+| User / Org (15) | Repository (15) |
+|-----------------|-----------------|
+| Stats Card | Star History Chart |
+| Streak Stats | Stars Badge |
+| Top Languages (compact) | Forks Badge |
+| Top Languages (pie) | Issues Badge |
+| Profile Trophy | License Badge |
+| Activity Graph | Last Commit |
+| Profile Views | Repo Size |
+| Typing SVG | Top Language |
+| Followers Badge | Contributors |
+| Stars Badge | Release Version |
+| Snake Contribution | Downloads |
+| Summary Card | Build Status |
+| Productive Time | Open PRs |
+| Stats by Repo | Repo Pin Card |
+| Social Badges | Commit Activity |
+
+Enter your `{{username}}` or `{{owner}}/{{repo}}` and copy instantly.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, Vite 5 |
-| Styling | TailwindCSS 3 (dark mode only) |
-| Animations | Framer Motion |
-| Data | TanStack Query (React Query) |
-| Editor | CodeMirror 6 (lazy-loaded) |
-| Routing | React Router 6 |
-| SEO | react-helmet-async |
-| Hosting | Cloudflare Pages |
-| Backend | Cloudflare Functions (serverless) |
-| Database | Cloudflare D1 (SQLite) |
-| Auth | GitHub OAuth |
+| | Technology | Purpose |
+|-|-----------|---------|
+| ⚛️ | React 18 | UI framework |
+| ⚡ | Vite 5 | Build tool |
+| 🎨 | TailwindCSS 3 | Styling (dark mode only) |
+| 🎬 | Framer Motion | Animations |
+| ✏️ | CodeMirror 6 | Code editor (lazy-loaded) |
+| 📡 | TanStack Query | Data fetching + caching |
+| 🛣️ | React Router 6 | Client-side routing |
+| ☁️ | Cloudflare Pages | Hosting + CDN |
+| ⚙️ | Cloudflare Functions | Auth + D1 access |
+| 🗃️ | Cloudflare D1 | Database (SQLite) |
+| 🔐 | GitHub OAuth | Authentication |
 
 ---
 
 ## Design
 
-- **Brand Colors**: `#1B1B1B` (primary) + `#00bf63` (accent green)
-- **Dark mode only** — no light theme
-- **Font**: Inter (UI) + JetBrains Mono (code/headings)
-- **Hero**: Matrix Digital Rain with hover spotlight reveal
-- **Cards**: Glassmorphism with subtle borders
-- **Responsive**: Mobile-first, tools as horizontal sliders on small screens
+```
+Primary:   #1B1B1B (dark)
+Accent:    #00bf63 (green)
+Font UI:   Inter
+Font Code: JetBrains Mono
+Hero:      Matrix Digital Rain (Canvas 2D) + hover spotlight
+Theme:     Dark only — no light mode
+```
 
 ---
 
 ## Routes
 
-| Route | Description |
-|-------|-------------|
-| `/` | Homepage — hero, trending, discovery, contributors |
-| `/explore` | Explore with language/time/sort filters + pagination |
-| `/search` | Full search page for repos and users |
-| `/components` | README component marketplace (30 components) |
-| `/compare` | Side-by-side comparison tool |
-| `/dashboard` | Authenticated user dashboard |
-| `/about` | Platform introduction and features |
-| `/support` | Contact and social links |
-| `/privacy` | Privacy policy |
-| `/terms` | Terms of service |
-| `/admin/cms` | CMS admin panel (admin-only) |
-| `/:username` | User profile with README + repos |
-| `/orgs/:orgname` | Organization page with README + repos |
-| `/:owner/:repo` | Repository detail with 12 analysis tools |
-| `/:owner/:repo/editor` | Code editor with PR creation |
+| Route | Page |
+|-------|------|
+| `/` | Homepage — Matrix Rain hero, trending, discovery |
+| `/explore` | Filter by language, time, sort |
+| `/components` | 30 README components |
+| `/compare` | Repo vs Repo, User vs User |
+| `/about` | Platform introduction |
+| `/dashboard` | Your repos + tools (auth) |
+| `/search` | Full search results |
+| `/:username` | User profile + README + tools |
+| `/orgs/:orgname` | Org profile + README |
+| `/:owner/:repo` | Repo detail + 12 tools |
+| `/:owner/:repo/editor` | Code editor + PR creation |
+| `/admin/cms` | CMS admin (admin-only) |
+
+---
+
+## Cloudflare Functions
+
+Only **critical server-side functions** that require secrets or D1:
+
+| Function | Purpose |
+|----------|---------|
+| `auth/github.js` | OAuth token exchange (needs CLIENT_SECRET) |
+| `cms/public.js` | Read announcements/banners/sponsored from D1 |
+| `cms/manage.js` | Admin CRUD for CMS content (D1 writes) |
+| `favorites/add.js` | Save favorite repos to D1 |
+| `favorites/list.js` | Get user's favorites from D1 |
+| `favorites/remove.js` | Remove favorite from D1 |
+
+All GitHub API calls run **client-side** — no unnecessary workers.
 
 ---
 
@@ -154,81 +197,34 @@ Scotium is not another GitHub clone. It's a **power-user dashboard** that gives 
 git clone https://github.com/truehannan/scotium-dev.git
 cd scotium-dev
 npm install
-```
-
-Create `.env.local`:
-```env
-VITE_GITHUB_CLIENT_ID=your_github_oauth_client_id
-VITE_GITHUB_REDIRECT_URI=http://localhost:5173/auth/callback
-```
-
-Run locally:
-```bash
+cp .env.example .env.local   # add your GitHub OAuth credentials
 npm run dev
 ```
 
-Build:
+## Deploy
+
 ```bash
-npm run build
+npm run build               # outputs to dist/
+wrangler pages deploy dist  # deploy to Cloudflare
 ```
 
----
-
-## Deploy to Cloudflare Pages
-
-1. Push to GitHub
-2. Connect repo to Cloudflare Pages
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. Add environment variables:
-   - `GITHUB_CLIENT_ID`
-   - `GITHUB_CLIENT_SECRET`
-6. Run D1 migration: `wrangler d1 migrations apply scotium`
-
----
-
-## Environment Variables
-
-| Variable | Where | Description |
-|----------|-------|-------------|
-| `VITE_GITHUB_CLIENT_ID` | Frontend (.env) | GitHub OAuth App Client ID |
-| `VITE_GITHUB_REDIRECT_URI` | Frontend (.env) | OAuth callback URL |
-| `GITHUB_CLIENT_ID` | Cloudflare (wrangler.toml) | Same Client ID for Functions |
-| `GITHUB_CLIENT_SECRET` | Cloudflare (dashboard) | OAuth App Secret (never commit!) |
+Environment variables (set in Cloudflare dashboard):
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
 
 ---
 
 ## Database
 
-Cloudflare D1 with tables:
-- `users` — OAuth sessions
-- `favorites` — Saved repositories
-- `cms_announcements` — Top bar announcements
-- `cms_banners` — Section banner ads
-- `cms_sponsored_repos` — Sponsored repo cards
-- `components` — User-submitted README components
+```sql
+-- Run migration
+wrangler d1 migrations apply scotium
+```
 
----
-
-## For AI Agents
-
-Scotium is a React SPA that wraps the GitHub REST API with added analysis tools. Key points:
-
-- All data comes from `https://api.github.com` endpoints
-- Authentication is optional (increases rate limit from 60 to 5000 req/hour)
-- The `/about` page explains all features in plain text
-- Routes follow GitHub's URL structure (`/:owner/:repo`)
-- No server-side rendering — pure client-side React
-- Cloudflare Functions handle only OAuth token exchange and CMS data
-
----
-
-## License
-
-MIT
+Tables: `users`, `favorites`, `cms_announcements`, `cms_banners`, `cms_sponsored_repos`, `components`
 
 ---
 
 <p align="center">
-  Built by <a href="https://hannan.page.dev"><strong>Hannan</strong></a>
+  Built with 💚 by <a href="https://hannan.page.dev"><strong>Hannan</strong></a>
 </p>
