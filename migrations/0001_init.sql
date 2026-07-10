@@ -84,3 +84,28 @@ CREATE TABLE IF NOT EXISTS components (
 
 CREATE INDEX IF NOT EXISTS idx_components_category ON components(category, active);
 CREATE INDEX IF NOT EXISTS idx_components_author ON components(author_username);
+
+
+-- Maintainer Health Score (Workers AI)
+CREATE TABLE IF NOT EXISTS maintainer_health (
+  id TEXT PRIMARY KEY,
+  owner TEXT NOT NULL,
+  repo TEXT NOT NULL,
+  score INTEGER NOT NULL,
+  trend TEXT DEFAULT 'stable',
+  burnout_risk INTEGER DEFAULT 0,
+  commit_count INTEGER DEFAULT 0,
+  positive_ratio REAL DEFAULT 0.5,
+  commits_json TEXT,
+  analyzed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS health_usage (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL,
+  date TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_health_owner_repo ON maintainer_health(owner, repo);
+CREATE INDEX IF NOT EXISTS idx_health_usage ON health_usage(username, date);

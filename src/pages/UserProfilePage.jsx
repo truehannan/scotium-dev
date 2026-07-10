@@ -43,10 +43,10 @@ export default function UserProfilePage() {
               <span><span className="font-bold text-white">{formatNum(user.following)}</span> following</span>
             </div>
             <div className="mt-3 space-y-1.5 text-xs text-gray-400">
-              {user.company && <p>🏢 {user.company}</p>}
-              {user.location && <p>📍 {user.location}</p>}
+              {user.company && <p>{user.company}</p>}
+              {user.location && <p>{user.location}</p>}
               {user.blog && <p><a href={user.blog.startsWith('http') ? user.blog : `https://${user.blog}`} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline">{user.blog}</a></p>}
-              <p>📦 {user.public_repos} repos</p>
+              <p>{user.public_repos} repos</p>
             </div>
             {orgs?.length > 0 && (
               <div className="mt-4 pt-4 border-t border-white/[0.06]">

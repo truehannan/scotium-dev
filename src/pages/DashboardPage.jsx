@@ -49,7 +49,7 @@ export default function DashboardPage() {
         </div>
         <StatCard label="Total Stars" value={formatNum(totalStars)} icon="★" color="text-yellow-400" />
         <StatCard label="Total Forks" value={formatNum(totalForks)} icon="⑂" color="text-blue-400" />
-        <StatCard label="Private Repos" value={privateCount} icon="🔒" color="text-purple-400" />
+        <StatCard label="Private Repos" value={privateCount} icon="" color="text-purple-400" />
       </div>
 
       {/* Language Breakdown */}
@@ -102,7 +102,7 @@ export default function DashboardPage() {
         <div className="space-y-2">
           {(events || []).slice(0, 15).map((e, i) => (
             <div key={`${e.id}-${i}`} className="card flex items-start gap-3">
-              <span className="text-base">{({ PushEvent: '📝', WatchEvent: '⭐', CreateEvent: '🆕', ForkEvent: '🔀', PullRequestEvent: '🔃', IssuesEvent: '🐛' })[e.type] || '📌'}</span>
+              <span className="text-base">{e.type.replace('Event', '')}</span>
               <div><p className="text-sm text-white"><span className="font-medium">{e.type.replace('Event', '')}</span>{e.repo && <span className="text-gray-400 ml-1">in <Link to={`/${e.repo.name}`} className="text-secondary">{e.repo.name}</Link></span>}</p><p className="text-[11px] text-gray-500">{formatDate(e.created_at)}</p></div>
             </div>
           ))}
@@ -125,14 +125,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Repo Health Summary */}
           <div className="card col-span-full">
-            <h3 className="text-sm font-semibold text-white mb-3">📊 Repo Health Summary</h3>
+            <h3 className="text-sm font-semibold text-white mb-3">Repo Health Summary</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead><tr className="text-gray-500 text-left"><th className="pb-2">Repo</th><th className="pb-2">Stars</th><th className="pb-2">Issues</th><th className="pb-2">Language</th><th className="pb-2">Updated</th></tr></thead>
                 <tbody>
                   {allRepos.slice(0, 10).map(r => (
                     <tr key={r.id} className="border-t border-gray-800/40">
-                      <td className="py-2"><Link to={`/${r.full_name}`} className="text-secondary hover:underline">{r.name}</Link>{r.private && <span className="ml-1 text-[9px] text-yellow-400">🔒</span>}</td>
+                      <td className="py-2"><Link to={`/${r.full_name}`} className="text-secondary hover:underline">{r.name}</Link>{r.private && <span className="ml-1 text-[9px] text-yellow-400"></span>}</td>
                       <td className="py-2 text-gray-400">★ {formatNum(r.stargazers_count)}</td>
                       <td className="py-2 text-gray-400">{r.open_issues_count}</td>
                       <td className="py-2 text-gray-400">{r.language || '—'}</td>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
 
           {/* Stale Repos Alert */}
           <div className="card">
-            <h3 className="text-sm font-semibold text-white mb-3">⚠️ Stale Repos</h3>
+            <h3 className="text-sm font-semibold text-white mb-3">Stale Repos</h3>
             <p className="text-[10px] text-gray-500 mb-2">Repos with no updates in 90+ days</p>
             {(() => {
               const stale = allRepos.filter(r => (Date.now() - new Date(r.pushed_at)) / 86400000 > 90);
@@ -163,7 +163,7 @@ export default function DashboardPage() {
 
           {/* Open PR Tracker */}
           <div className="card">
-            <h3 className="text-sm font-semibold text-white mb-3">🔃 Open PRs</h3>
+            <h3 className="text-sm font-semibold text-white mb-3">Open PRs</h3>
             <p className="text-[10px] text-gray-500 mb-2">Your open pull requests across repos</p>
             {issues?.filter(i => i.pull_request).length > 0 ? (
               <div className="space-y-1.5">{issues.filter(i => i.pull_request).slice(0, 5).map(pr => (
@@ -177,7 +177,7 @@ export default function DashboardPage() {
 
           {/* Star Trends */}
           <div className="card col-span-full">
-            <h3 className="text-sm font-semibold text-white mb-3">⭐ Star Leaders</h3>
+            <h3 className="text-sm font-semibold text-white mb-3">Star Leaders</h3>
             <p className="text-[10px] text-gray-500 mb-2">Your repos ranked by stars</p>
             <div className="space-y-1.5">
               {topRepos.map((r, i) => (

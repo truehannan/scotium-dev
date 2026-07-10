@@ -37,9 +37,9 @@ export default function OrgPage() {
           <h1 className="text-xl font-bold text-white">{org.name || orgname}</h1>
           {org.description && <p className="text-sm text-gray-400 mt-0.5">{org.description}</p>}
           <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-500 justify-center sm:justify-start">
-            {org.location && <span>📍 {org.location}</span>}
-            <span>📦 {formatNum(org.public_repos)} repos</span>
-            {members && <span>👥 {members.length} members</span>}
+            {org.location && <span>{org.location}</span>}
+            <span>{formatNum(org.public_repos)} repos</span>
+            {members && <span>{members.length} members</span>}
             {org.blog && <a href={org.blog.startsWith('http') ? org.blog : `https://${org.blog}`} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline">{org.blog}</a>}
           </div>
         </div>

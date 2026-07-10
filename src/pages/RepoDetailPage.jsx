@@ -6,6 +6,7 @@ import SEO from '../components/ui/SEO';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import MarkdownReadme from '../components/ui/MarkdownReadme';
 import RepoToolsPanel from '../components/ui/RepoToolsPanel';
+import MaintainerHealthCard from '../components/ui/MaintainerHealthCard';
 import { useState } from 'react';
 
 export default function RepoDetailPage() {
@@ -29,14 +30,13 @@ export default function RepoDetailPage() {
   if (error) return <div className="max-w-4xl mx-auto px-4 py-16 text-center"><h2 className="text-2xl font-bold text-white">Repository not found</h2><p className="text-gray-400 mt-2">{owner}/{repo} doesn't exist or is private.</p></div>;
 
   const tabs = [
-    { key: 'code', label: 'Code', icon: '📄' },
-    { key: 'issues', label: 'Issues', count: repoData.open_issues_count, icon: '🔵' },
-    { key: 'pulls', label: 'Pull Requests', icon: '🔃' },
-    { key: 'discussions', label: 'Discussions', icon: '💬' },
-    { key: 'actions', label: 'Actions', icon: '▶️' },
-    { key: 'releases', label: 'Releases', icon: '🏷️' },
-    { key: 'insights', label: 'Insights', icon: '📊' },
-    { key: 'security', label: 'Security', icon: '🔒' },
+    { key: 'code', label: 'Code' },
+    { key: 'issues', label: 'Issues', count: repoData.open_issues_count },
+    { key: 'pulls', label: 'Pull Requests' },
+    { key: 'discussions', label: 'Discussions' },
+    { key: 'actions', label: 'Actions' },
+    { key: 'releases', label: 'Releases' },
+    { key: 'security', label: 'Security' },
   ];
 
   // Health Score calculation (merged Pulse)
@@ -78,7 +78,7 @@ export default function RepoDetailPage() {
               <span>⑂ {formatNum(repoData.forks_count)}</span>
               <span>👁 {formatNum(repoData.watchers_count)}</span>
               {repoData.language && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: LANG_COLORS[repoData.language] }} />{repoData.language}</span>}
-              {repoData.license?.spdx_id && <span>📜 {repoData.license.spdx_id}</span>}
+              {repoData.license?.spdx_id && <span>{repoData.license.spdx_id}</span>}
               <span>Updated {formatDate(repoData.updated_at)}</span>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function RepoDetailPage() {
       <div className="flex items-center gap-0.5 border-b border-white/[0.06] mb-6 overflow-x-auto">
         {tabs.map(t => (
           <button key={t.key} onClick={() => navigate(`/${owner}/${repo}${t.key === 'code' ? '' : '/' + t.key}`)} className={`px-3 py-3 text-xs sm:text-sm whitespace-nowrap flex items-center gap-1.5 ${activeTab === t.key ? 'tab-active' : 'tab-inactive'}`}>
-            <span className="hidden sm:inline">{t.icon}</span> {t.label}
+            {t.label}
             {t.count !== undefined && <span className="text-[10px] bg-gray-700/60 px-1.5 py-0.5 rounded-full">{formatNum(t.count)}</span>}
           </button>
         ))}
@@ -102,7 +102,12 @@ export default function RepoDetailPage() {
       {/* CODE TAB (includes analysis tools) */}
       {activeTab === 'code' && (
         <>
-          {/* Tools slider: at TOP on mobile, sidebar on desktop */}
+          {/* Maintainer Health Score - prominent */}
+          <div className="mb-4">
+            <MaintainerHealthCard owner={owner} repo={repo} />
+          </div>
+
+          {/* Tools slider: at TOP on mobile, compact grid on desktop */}
           <RepoToolsPanel
             repoData={repoData}
             commits={commits}
@@ -121,7 +126,7 @@ export default function RepoDetailPage() {
                   <div className="space-y-0.5">
                     {contents.sort((a, b) => (a.type === 'dir' ? -1 : 1) - (b.type === 'dir' ? -1 : 1) || a.name.localeCompare(b.name)).map(item => (
                       <div key={item.sha} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/[0.02] text-sm">
-                        {item.type === 'dir' ? <span className="text-accent-blue">📁</span> : <span className="text-gray-500">📄</span>}
+                        
                         <span className="text-gray-300">{item.name}</span>
                       </div>
                     ))}
@@ -208,7 +213,7 @@ export default function RepoDetailPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-white group-hover:text-secondary truncate">{issue.title}</p>
                 <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500">
-                  <span>#{issue.number}</span><span>{issue.user.login}</span><span>{formatDate(issue.created_at)}</span><span>💬 {issue.comments}</span>
+                  <span>#{issue.number}</span><span>{issue.user.login}</span><span>{formatDate(issue.created_at)}</span><span>{issue.comments} comments</span>
                 </div>
                 {issue.labels?.length > 0 && <div className="flex gap-1 mt-1">{issue.labels.slice(0, 4).map(l => <span key={l.id} className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: `#${l.color}20`, color: `#${l.color}` }}>{l.name}</span>)}</div>}
               </div>
@@ -237,42 +242,12 @@ export default function RepoDetailPage() {
           {releases?.map(r => (
             <a key={r.id} href={r.html_url} target="_blank" rel="noopener noreferrer" className="card group">
               <div className="flex items-center gap-3">
-                <span className="text-lg">🏷️</span>
+                
                 <div><p className="text-sm font-semibold text-white group-hover:text-secondary">{r.name || r.tag_name}</p><p className="text-[11px] text-gray-500">{r.tag_name} • {formatDate(r.published_at)} {r.prerelease && <span className="badge bg-yellow-500/10 text-yellow-400 ml-1">Pre-release</span>}</p></div>
               </div>
             </a>
           ))}
           {(!releases || releases.length === 0) && <div className="card text-center py-8 text-gray-400 text-sm">No releases</div>}
-        </div>
-      )}
-
-      {/* INSIGHTS TAB */}
-      {activeTab === 'insights' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="card-glass text-center py-8">
-            <div className="relative w-24 h-24 mx-auto">
-              <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a2a" strokeWidth="8" /><circle cx="50" cy="50" r="40" fill="none" stroke={scoreColor} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${healthScore * 2.51} 251`} /></svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-2xl font-black" style={{ color: scoreColor }}>{healthScore}</span><span className="text-[9px] text-gray-500">HEALTH</span></div>
-            </div>
-          </div>
-          <div className="card grid grid-cols-2 gap-3">
-            <MiniMetricFull label="Commit Activity" value={commitScore} detail={`${daysSinceCommit}d since last`} />
-            <MiniMetricFull label="Bus Factor" value={busFactor} detail={`${contribCount} contributors`} />
-            <MiniMetricFull label="Issue Health" value={issueScore} detail={`${repoData.open_issues_count} open`} />
-            <MiniMetricFull label="Documentation" value={readmeScore} detail={readme ? 'Has README' : 'Missing'} />
-          </div>
-          {contributors?.length > 0 && (
-            <div className="card col-span-full">
-              <h3 className="text-sm font-semibold text-white mb-3">Top Contributors</h3>
-              <div className="flex flex-wrap gap-2">
-                {contributors.slice(0, 20).map(c => (
-                  <Link key={c.id} to={`/${c.login}`} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-xs text-gray-300">
-                    <img src={c.avatar_url} alt="" className="w-5 h-5 rounded-full" />{c.login}<span className="text-gray-500 text-[10px]">({c.contributions})</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -287,12 +262,3 @@ export default function RepoDetailPage() {
   );
 }
 
-function MiniMetric({ label, value }) {
-  const color = value >= 75 ? 'text-green-400' : value >= 50 ? 'text-yellow-400' : 'text-red-400';
-  return <div className="text-center"><p className={`text-sm font-bold ${color}`}>{value}</p><p className="text-[9px] text-gray-500">{label}</p></div>;
-}
-
-function MiniMetricFull({ label, value, detail }) {
-  const color = value >= 75 ? 'text-green-400' : value >= 50 ? 'text-yellow-400' : 'text-red-400';
-  return <div><p className="text-[10px] text-gray-500 uppercase">{label}</p><p className={`text-xl font-bold ${color}`}>{value}<span className="text-xs text-gray-600">/100</span></p><p className="text-[10px] text-gray-500">{detail}</p></div>;
-}

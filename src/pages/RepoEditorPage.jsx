@@ -153,7 +153,7 @@ export default function RepoEditorPage() {
           </div>
           {isDir && contents.sort((a, b) => (a.type === 'dir' ? -1 : 1) - (b.type === 'dir' ? -1 : 1)).map(item => (
             <button key={item.sha} onClick={() => openFile(item)} className="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] text-xs text-gray-300">
-              <span>{item.type === 'dir' ? '📁' : '📄'}</span>
+              <span>{item.type === 'dir' ? 'dir' : 'file'}</span>
               <span className="truncate">{item.name}</span>
             </button>
           ))}

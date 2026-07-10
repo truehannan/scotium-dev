@@ -35,7 +35,7 @@ export default function HeroMatrixRain() {
     let animId;
     const draw = () => {
       // Semi-transparent black to create trail effect
-      ctx.fillStyle = 'rgba(27, 27, 27, 0.06)';
+      ctx.fillStyle = 'rgba(13, 13, 15, 0.06)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.font = `${fontSize}px "JetBrains Mono", monospace`;
@@ -106,7 +106,7 @@ export default function HeroMatrixRain() {
       <canvas ref={canvasRef} className="absolute inset-0 z-0" />
 
       {/* Subtle vignette overlay */}
-      <div className="absolute inset-0 z-[1] pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, #1B1B1B 85%)' }} />
+      <div className="absolute inset-0 z-[1] pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, #0D0D0F 85%)' }} />
 
       {/* Content */}
       <div className="relative z-10 text-center max-w-3xl px-6">
@@ -123,6 +123,17 @@ export default function HeroMatrixRain() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-8 flex items-center gap-4 justify-center">
           <Link to="/explore" className="btn-primary text-sm">Explore Repos</Link>
           <Link to="/dashboard" className="btn-outline text-sm">Dashboard</Link>
+        </motion.div>
+
+        {/* Quick analyze input */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7 }} className="mt-8">
+          <form onSubmit={(e) => { e.preventDefault(); const v = e.target.elements.repo.value.trim(); if (v.includes('/')) window.location.href = `/${v}`; }} className="flex items-center gap-2 max-w-md mx-auto">
+            <div className="relative flex-1">
+              <input name="repo" placeholder="owner/repo — check health score" className="w-full pl-4 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-secondary/40 transition-all" />
+            </div>
+            <button type="submit" className="btn-primary text-sm py-2.5 px-4">Analyze</button>
+          </form>
+          <p className="text-[10px] text-gray-600 mt-2">e.g. facebook/react, vercel/next.js, rust-lang/rust</p>
         </motion.div>
       </div>
 

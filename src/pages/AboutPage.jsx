@@ -3,49 +3,49 @@ import SEO from '../components/ui/SEO';
 
 const FEATURES = [
   {
-    icon: '📊',
+    icon: 'chart',
     title: 'Repository Analysis',
     desc: '12 analysis tools for any GitHub repository — Health Score, Bus Factor, PR Merge Speed, Issue Health, Tech Stack detection, and more. Instantly understand any project\'s health.',
     link: null,
   },
   {
-    icon: '👤',
+    icon: 'user',
     title: 'Profile Insights',
     desc: '8 tools for GitHub profiles — Total Stars, Follower Ratio, Account Age, Top Languages, Organization memberships. See any developer at a glance.',
     link: null,
   },
   {
-    icon: '⚖️',
+    icon: 'compare',
     title: 'Compare',
     desc: 'Side-by-side comparison of repositories or users. Visual progress bars show who wins on stars, forks, contributors, and more.',
     link: '/compare',
   },
   {
-    icon: '🧩',
+    icon: 'puzzle',
     title: 'README Components',
     desc: '30 ready-to-copy components for your GitHub README — stats cards, streak counters, trophies, activity graphs, badges. Just enter your username and copy.',
     link: '/components',
   },
   {
-    icon: '✏️',
+    icon: 'edit',
     title: 'Code Editor',
     desc: 'Browse any repository\'s files, edit code with syntax highlighting, create branches, commit changes, and open Pull Requests — all without leaving Scotium.',
     link: null,
   },
   {
-    icon: '🔍',
+    icon: 'search',
     title: 'Discovery Engine',
     desc: 'Find Rising Stars (new repos gaining traction), Undiscovered Gems (active but low-star repos), Most Forked projects, and recently active popular repos.',
     link: '/',
   },
   {
-    icon: '📈',
+    icon: 'trending',
     title: 'Dashboard',
     desc: 'Your personal GitHub command center. View all repos (including private), track stale repos, monitor open PRs, and see star rankings across your projects.',
     link: '/dashboard',
   },
   {
-    icon: '🔎',
+    icon: 'find',
     title: 'Smart Search',
     desc: 'Cmd+K search modal with live results as you type. Find repositories and users instantly without leaving the current page.',
     link: null,
@@ -98,7 +98,7 @@ export default function AboutPage() {
           {FEATURES.map(f => (
             <div key={f.title} className="card group">
               <div className="flex items-start gap-3">
-                <span className="text-2xl flex-shrink-0">{f.icon}</span>
+                <span className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary text-xs font-bold flex-shrink-0">{f.icon[0].toUpperCase()}</span>
                 <div>
                   <h3 className="text-sm font-semibold text-white group-hover:text-secondary transition-colors">
                     {f.link ? <Link to={f.link}>{f.title}</Link> : f.title}
