@@ -104,7 +104,7 @@ export default function RepoDetailPage() {
         <>
           {/* Maintainer Health Score - prominent */}
           <div className="mb-4">
-            <MaintainerHealthCard owner={owner} repo={repo} />
+            <MaintainerHealthCard owner={owner} repo={repo} repoData={repoData} contributors={contributors} />
           </div>
 
           {/* Tools slider: at TOP on mobile, compact grid on desktop */}
