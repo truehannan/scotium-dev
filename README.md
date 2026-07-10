@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/favicon.ico" alt="Scotium" width="48" height="48" />
+  <img src="public/favicon.ico" alt="Scotium" width="100" height="100" />
 </p>
 
 <h1 align="center">Scotium</h1>
