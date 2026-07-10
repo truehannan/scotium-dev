@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 
 const CODE_CHARS = 'const fn async await return import export function class interface struct impl pub let var def yield match for while if else try catch throw new delete void typeof instanceof switch case break continue do enum extends super this static get set from of in'.split(' ');
 const SYMBOLS = '{}[]();<>=+-*/&|!?:,.@#$%^~`_0123456789'.split('');
@@ -118,22 +117,27 @@ export default function HeroMatrixRain() {
           </h1>
         </motion.div>
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="mt-6 text-lg text-gray-400 max-w-xl mx-auto">
-          Explore trending repositories, analyze project health, and contribute directly — all in one place.
+          Analyze any repository's health, get actionable insights, and plan your next moves.
         </motion.p>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-8 flex items-center gap-4 justify-center">
-          <Link to="/explore" className="btn-primary text-sm">Explore Repos</Link>
-          <Link to="/dashboard" className="btn-outline text-sm">Dashboard</Link>
-        </motion.div>
 
-        {/* Quick analyze input */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7 }} className="mt-8">
-          <form onSubmit={(e) => { e.preventDefault(); const v = e.target.elements.repo.value.trim(); if (v.includes('/')) window.location.href = `/${v}`; }} className="flex items-center gap-2 max-w-md mx-auto">
-            <div className="relative flex-1">
-              <input name="repo" placeholder="owner/repo — check health score" className="w-full pl-4 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-secondary/40 transition-all" />
-            </div>
-            <button type="submit" className="btn-primary text-sm py-2.5 px-4">Analyze</button>
+        {/* Split owner/repo input */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-10">
+          <form id="hero-form" className="flex items-center justify-center gap-0 max-w-md mx-auto">
+            <input id="hero-owner" placeholder="owner" autoComplete="off"
+              className="w-[140px] pl-4 pr-2 py-3 bg-white/[0.04] border border-white/[0.08] border-r-0 rounded-l-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-secondary/40 focus:bg-white/[0.06] transition-all text-right"
+              onKeyDown={(e) => { if (e.key === '/' || e.key === 'Tab') { e.preventDefault(); document.getElementById('hero-repo').focus(); } }}
+            />
+            <span className="py-3 px-1.5 bg-white/[0.04] border-y border-white/[0.08] text-gray-500 text-sm font-mono">/</span>
+            <input id="hero-repo" placeholder="repo" autoComplete="off"
+              className="w-[140px] pl-2 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] border-l-0 rounded-r-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-secondary/40 focus:bg-white/[0.06] transition-all"
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const o = document.getElementById('hero-owner').value.trim(); const r = e.target.value.trim(); if (o && r) window.location.href = `/${o}/${r}`; } }}
+            />
+            <button type="button" onClick={() => { const o = document.getElementById('hero-owner').value.trim(); const r = document.getElementById('hero-repo').value.trim(); if (o && r) window.location.href = `/${o}/${r}`; }}
+              className="btn-primary text-sm py-3 px-5 ml-3 rounded-xl">
+              Analyze
+            </button>
           </form>
-          <p className="text-[10px] text-gray-600 mt-2">e.g. facebook/react, vercel/next.js, rust-lang/rust</p>
+          <p className="text-[10px] text-gray-600 mt-3 text-center">Try: facebook / react &nbsp;&bull;&nbsp; vercel / next.js &nbsp;&bull;&nbsp; rust-lang / rust</p>
         </motion.div>
       </div>
 
