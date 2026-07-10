@@ -8,6 +8,7 @@ const ExplorePage = lazy(() => import('./pages/ExplorePage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const ComponentsPage = lazy(() => import('./pages/ComponentsPage'));
 const ComparePage = lazy(() => import('./pages/ComparePage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
 const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
 const OrgPage = lazy(() => import('./pages/OrgPage'));
 const RepoDetailPage = lazy(() => import('./pages/RepoDetailPage'));
@@ -29,6 +30,7 @@ function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/components" element={<ComponentsPage />} />
           <Route path="/compare" element={<ComparePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />

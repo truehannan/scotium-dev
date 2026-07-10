@@ -11,4 +11,4 @@ database_id = "0d85242b-10c9-44dd-b14d-f324afdd8480"
 migrations_dir = "migrations"
 
 [vars]
-GITHUB_CLIENT_ID = "Iv23liQd2lcWRmtGkYVi"
+GITHUB_CLIENT_ID = ""

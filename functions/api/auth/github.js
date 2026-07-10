@@ -18,8 +18,8 @@ export async function onRequestPost(context) {
         Accept: 'application/json',
       },
       body: JSON.stringify({
-        client_id: env.GITHUB_CLIENT_ID || 'Iv23liQd2lcWRmtGkYVi',
-        client_secret: env.GITHUB_CLIENT_SECRET || '3c87c05b1a8cd597d744f6bc2e6238bb92205527',
+        client_id: env.GITHUB_CLIENT_ID,
+        client_secret: env.GITHUB_CLIENT_SECRET,
         code,
       }),
     });
