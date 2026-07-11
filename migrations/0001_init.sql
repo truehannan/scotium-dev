@@ -84,3 +84,21 @@ CREATE TABLE IF NOT EXISTS components (
 
 CREATE INDEX IF NOT EXISTS idx_components_category ON components(category, active);
 CREATE INDEX IF NOT EXISTS idx_components_author ON components(author_username);
+
+
+-- AI Analysis Cache & Usage
+CREATE TABLE IF NOT EXISTS ai_analysis_cache (
+  id TEXT PRIMARY KEY,
+  result_json TEXT NOT NULL,
+  generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS ai_usage (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL,
+  date TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_cache_expires ON ai_analysis_cache(expires_at);
+CREATE INDEX IF NOT EXISTS idx_ai_usage_user_date ON ai_usage(username, date);

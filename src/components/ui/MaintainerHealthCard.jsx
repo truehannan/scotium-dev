@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { VscPulse, VscArrowUp, VscArrowDown, VscDash, VscWarning, VscSparkle, VscFile, VscGitMerge, VscCalendar, VscShield, VscRocket, VscBug, VscTarget, VscFolderOpened } from 'react-icons/vsc';
 import { fetchRepoCommits, fetchRepoContents, formatDate } from '../../utils/github';
 import { useAuth } from '../../context/AuthContext';
@@ -6,11 +6,12 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 export default function MaintainerHealthCard({ owner, repo, repoData, contributors }) {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [analyzing, setAnalyzing] = useState(true);
   const [result, setResult] = useState(null);
   const [activeSection, setActiveSection] = useState('health');
   const [quote, setQuote] = useState({ q: 'Code is like humor. When you have to explain it, it\'s bad.', a: 'Cory House' });
+  const [error, setError] = useState(null);
   const [typingDone, setTypingDone] = useState(false);
 
   const { data: commits } = useQuery({ queryKey: ['intel-commits', owner, repo], queryFn: () => fetchRepoCommits(owner, repo, 1, token), enabled: !!owner && !!repo });
@@ -18,18 +19,81 @@ export default function MaintainerHealthCard({ owner, repo, repoData, contributo
 
   useEffect(() => { axios.get('https://zenquotes.io/api/random').then(r => { if (r.data?.[0]) setQuote(r.data[0]); }).catch(() => {}); }, []);
 
+  // Call real AI endpoint when data is ready
   useEffect(() => {
-    if (!commits || !repoData) return;
-    const delay = 4500 + Math.random() * 1000;
-    const t = setTimeout(() => { setResult(runEngine(repoData, commits, contributors, rootFiles)); setAnalyzing(false); setTimeout(() => setTypingDone(true), 800); }, delay);
-    return () => clearTimeout(t);
-  }, [commits, repoData, contributors, rootFiles]);
+    if (!commits || !repoData || !rootFiles) return;
+
+    const runAnalysis = async () => {
+      const files = (rootFiles || []).map(f => f.name.toLowerCase());
+      const has = (n) => files.some(f => f.includes(n));
+      const daysSince = commits[0] ? Math.floor((Date.now() - new Date(commits[0].commit.author.date)) / 86400000) : 999;
+
+      const repoContext = {
+        description: repoData.description || '',
+        language: repoData.language || '',
+        stars: repoData.stargazers_count || 0,
+        forks: repoData.forks_count || 0,
+        issues: repoData.open_issues_count || 0,
+        contributors: contributors?.length || 0,
+        lastCommitDays: daysSince,
+        commitCount: commits.length,
+        hasLicense: has('license'),
+        hasCI: has('.github') || has('ci'),
+        hasTests: has('test') || has('spec') || has('__tests__'),
+        hasSecurity: has('security'),
+        hasContributing: has('contributing'),
+        hasDocker: has('docker'),
+        hasChangelog: has('changelog'),
+        rootFiles: (rootFiles || []).map(f => f.name).slice(0, 20),
+        recentCommits: (commits || []).slice(0, 10).map(c => c.commit.message.split('\n')[0].slice(0, 80)),
+      };
+
+      try {
+        if (!token) throw new Error('AUTH_REQUIRED');
+
+        const res = await fetch('/api/analyze/intelligence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ owner, repo, repoContext }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Rate limit or auth error — fall back to local
+          if (data.code === 'RATE_LIMIT') setError('Daily AI limit reached (3/day). Showing cached analysis.');
+          throw new Error(data.error || 'API error');
+        }
+
+        // Real AI response — format it
+        setResult({
+          health: { score: data.score, trend: data.trend || 'stable', burnout: data.burnout || false, insights: data.health || [] },
+          roadmap: data.roadmap || [],
+          issues: data.issues || [],
+          commitPlan: data.commitPlan || [],
+          fileInsights: data.fileInsights || [],
+          calendar: data.calendar || [],
+          security: data.security || [],
+          growth: data.growth || [],
+        });
+      } catch (err) {
+        // FALLBACK: Run local analysis engine
+        console.info('AI endpoint unavailable, using local analysis:', err.message);
+        setResult(runLocalEngine(repoData, commits, contributors, rootFiles));
+      }
+
+      setAnalyzing(false);
+      setTimeout(() => setTypingDone(true), 400);
+    };
+
+    runAnalysis();
+  }, [commits, repoData, contributors, rootFiles, token]);
+
 
   // === FULLSCREEN AI LOADER ===
   if (analyzing) {
     return (
       <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center">
-        {/* Animated gradient ring */}
         <div className="relative w-20 h-20 mb-8">
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-secondary via-accent-cyan to-secondary animate-spin" style={{ padding: '3px' }}>
             <div className="w-full h-full rounded-full bg-black" />
@@ -38,20 +102,13 @@ export default function MaintainerHealthCard({ owner, repo, repoData, contributo
             <VscSparkle className="w-7 h-7 text-secondary animate-pulse" />
           </div>
         </div>
-
-        <p className="text-xl font-bold text-white mb-2 tracking-tight">Analyzing with Intelligence</p>
-        <p className="text-sm text-gray-400 max-w-sm text-center leading-relaxed">
-          Scanning commit history, evaluating file structure, measuring health patterns, and generating personalized insights
-        </p>
-
-        {/* Progress dots */}
+        <p className="text-xl font-bold text-white mb-2 tracking-tight">Running AI Analysis</p>
+        <p className="text-sm text-gray-400 max-w-sm text-center leading-relaxed">Generating insights with Llama 3.1 — analyzing commits, structure, and health patterns</p>
         <div className="flex items-center gap-1.5 mt-6">
           <div className="w-2 h-2 rounded-full bg-secondary animate-bounce" style={{ animationDelay: '0ms' }} />
           <div className="w-2 h-2 rounded-full bg-secondary animate-bounce" style={{ animationDelay: '150ms' }} />
           <div className="w-2 h-2 rounded-full bg-secondary animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
-
-        {/* Quote */}
         <div className="mt-10 max-w-md text-center px-6">
           <p className="text-sm text-gray-300 italic leading-relaxed">"{quote.q}"</p>
           <p className="text-xs text-gray-500 mt-2">— {quote.a}</p>
@@ -79,11 +136,8 @@ export default function MaintainerHealthCard({ owner, repo, repoData, contributo
 
   return (
     <div className={`relative rounded-2xl overflow-hidden transition-all duration-500 ${typingDone ? 'opacity-100' : 'opacity-0 translate-y-2'}`}>
-      {/* Gradient glow border */}
       <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${scoreBorder} to-secondary/10 opacity-60`} />
       <div className="absolute inset-[1px] rounded-2xl bg-[#0a0a0c]" />
-
-      {/* Content */}
       <div className="relative">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
@@ -103,24 +157,22 @@ export default function MaintainerHealthCard({ owner, repo, repoData, contributo
           </div>
         </div>
 
-        {/* Tab navigation - pill style */}
+        {error && <div className="px-6 py-2 bg-yellow-500/[0.05] border-b border-yellow-500/10 text-xs text-yellow-400">{error}</div>}
+
+        {/* Pill tabs */}
         <div className="px-4 py-3 border-b border-white/[0.04] overflow-x-auto">
           <div className="flex gap-1.5 min-w-max">
             {sections.map(s => (
               <button key={s.id} onClick={() => setActiveSection(s.id)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium transition-all duration-200
-                  ${activeSection === s.id
-                    ? 'bg-secondary/15 text-secondary border border-secondary/30 shadow-sm shadow-secondary/10'
-                    : 'text-gray-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
-                  }`}>
-                <s.Icon className="w-3.5 h-3.5" />
-                {s.label}
+                  ${activeSection === s.id ? 'bg-secondary/15 text-secondary border border-secondary/30 shadow-sm shadow-secondary/10' : 'text-gray-400 hover:text-white hover:bg-white/[0.04] border border-transparent'}`}>
+                <s.Icon className="w-3.5 h-3.5" />{s.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Content area */}
+        {/* Content */}
         <div className="px-6 py-5 min-h-[200px] max-h-[500px] overflow-y-auto">
           {activeSection === 'health' && <HealthSection data={result.health} />}
           {activeSection === 'roadmap' && <ListSection items={result.roadmap} />}
@@ -132,207 +184,100 @@ export default function MaintainerHealthCard({ owner, repo, repoData, contributo
           {activeSection === 'growth' && <ListSection items={result.growth} />}
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-3 border-t border-white/[0.04] flex items-center justify-between">
-          <p className="text-[10px] text-gray-600">Generated by Scotium Intelligence Engine</p>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
-            <span className="text-[10px] text-gray-500">Live analysis</span>
-          </div>
+          <p className="text-[10px] text-gray-600">Powered by Cloudflare Workers AI (Llama 3.1)</p>
+          <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" /><span className="text-[10px] text-gray-500">AI generated</span></div>
         </div>
       </div>
     </div>
   );
 }
 
-// === SUB-COMPONENTS WITH AI FEEL ===
 
+// === UI SUB-COMPONENTS ===
 function HealthSection({ data }) {
   return (
     <div className="space-y-4">
-      {data.insights.map((text, i) => (
+      {(data.insights || []).map((text, i) => (
         <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-          <div className="w-5 h-5 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <VscSparkle className="w-3 h-3 text-secondary" />
-          </div>
+          <div className="w-5 h-5 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0 mt-0.5"><VscSparkle className="w-3 h-3 text-secondary" /></div>
           <p className="text-sm text-gray-300 leading-relaxed">{text}</p>
         </div>
       ))}
       {data.burnout && (
         <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/[0.05] border border-red-500/20">
           <VscWarning className="w-5 h-5 text-red-400 flex-shrink-0" />
-          <div>
-            <p className="text-sm text-red-300 font-medium">Burnout Risk Detected</p>
-            <p className="text-xs text-red-400/70 mt-0.5">Declining commit frequency combined with reactive fix patterns</p>
-          </div>
+          <div><p className="text-sm text-red-300 font-medium">Burnout Risk Detected</p><p className="text-xs text-red-400/70 mt-0.5">Declining patterns combined with reactive commits indicate potential maintainer fatigue</p></div>
         </div>
       )}
     </div>
   );
 }
-
 function ListSection({ items }) {
-  return (
-    <div className="space-y-3">
-      {items.map((item, i) => (
-        <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-secondary/20 transition-colors">
-          <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0 text-xs font-bold text-secondary">
-            {i + 1}
-          </div>
-          <div>
-            <p className="text-sm text-white font-medium">{item.title}</p>
-            {item.detail && <p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.detail}</p>}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return (<div className="space-y-3">{(items || []).map((item, i) => (<div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-secondary/20 transition-colors"><div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0 text-xs font-bold text-secondary">{i+1}</div><div><p className="text-sm text-white font-medium">{item.title}</p>{item.detail && <p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.detail}</p>}</div></div>))}</div>);
 }
-
 function IssuesSection({ items, owner, repo }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-2">
-        <VscSparkle className="w-3.5 h-3.5 text-secondary" />
-        <p className="text-xs text-gray-400">Suggested issues based on repository analysis:</p>
-      </div>
-      {items.map((item, i) => (
-        <div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-secondary/20 transition-colors">
-          <p className="text-sm text-white font-semibold">{item.title}</p>
-          <p className="text-xs text-gray-400 mt-2 leading-relaxed whitespace-pre-line">{item.body}</p>
-          <a href={`https://github.com/${owner}/${repo}/issues/new?title=${encodeURIComponent(item.title)}&body=${encodeURIComponent(item.body)}`}
-            target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-xs font-medium hover:bg-secondary/20 transition-colors">
-            <VscBug className="w-3 h-3" /> Create on GitHub
-          </a>
-        </div>
-      ))}
-    </div>
-  );
+  return (<div className="space-y-3"><div className="flex items-center gap-2 mb-2"><VscSparkle className="w-3.5 h-3.5 text-secondary" /><p className="text-xs text-gray-400">AI-suggested issues for this repository:</p></div>{(items || []).map((item, i) => (<div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-secondary/20 transition-colors"><p className="text-sm text-white font-semibold">{item.title}</p><p className="text-xs text-gray-400 mt-2 leading-relaxed whitespace-pre-line">{item.body}</p><a href={`https://github.com/${owner}/${repo}/issues/new?title=${encodeURIComponent(item.title)}&body=${encodeURIComponent(item.body)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-xs font-medium hover:bg-secondary/20 transition-colors"><VscBug className="w-3 h-3" />Create on GitHub</a></div>))}</div>);
 }
-
 function FilesSection({ items }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-2">
-        <VscSparkle className="w-3.5 h-3.5 text-secondary" />
-        <p className="text-xs text-gray-400">File structure analysis:</p>
-      </div>
-      {items.map((item, i) => (
-        <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-          <VscFile className="w-5 h-5 text-accent-blue flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm text-white font-mono font-medium">{item.file}</p>
-            <p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.insight}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return (<div className="space-y-3"><div className="flex items-center gap-2 mb-2"><VscSparkle className="w-3.5 h-3.5 text-secondary" /><p className="text-xs text-gray-400">AI file structure analysis:</p></div>{(items || []).map((item, i) => (<div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04]"><VscFile className="w-5 h-5 text-accent-blue flex-shrink-0 mt-0.5" /><div><p className="text-sm text-white font-mono font-medium">{item.file}</p><p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.insight}</p></div></div>))}</div>);
 }
-
 function CalendarSection({ items, owner, repo }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-2">
-        <VscSparkle className="w-3.5 h-3.5 text-secondary" />
-        <p className="text-xs text-gray-400">Recommended task schedule:</p>
-      </div>
-      {items.map((item, i) => {
-        const s = new Date(); s.setDate(s.getDate() + item.daysFromNow);
-        const e = new Date(s); e.setHours(e.getHours() + 1);
-        const f = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-        const gUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title + ' - ' + owner + '/' + repo)}&dates=${f(s)}/${f(e)}&details=${encodeURIComponent(item.detail)}`;
-        const oUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(item.title + ' - ' + owner + '/' + repo)}&startdt=${s.toISOString()}&enddt=${e.toISOString()}&body=${encodeURIComponent(item.detail)}`;
-        return (
-          <div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-secondary/20 transition-colors">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-sm text-white font-medium">{item.title}</p>
-              <span className="text-[11px] text-gray-500 bg-white/[0.04] px-2 py-0.5 rounded-full">in {item.daysFromNow} days</span>
-            </div>
-            <p className="text-xs text-gray-400 leading-relaxed">{item.detail}</p>
-            <div className="flex gap-2 mt-3">
-              <a href={gUrl} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-[11px] text-gray-300 hover:text-secondary hover:bg-secondary/10 transition-colors">+ Google Calendar</a>
-              <a href={oUrl} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-[11px] text-gray-300 hover:text-accent-blue hover:bg-accent-blue/10 transition-colors">+ Outlook</a>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  return (<div className="space-y-3"><div className="flex items-center gap-2 mb-2"><VscSparkle className="w-3.5 h-3.5 text-secondary" /><p className="text-xs text-gray-400">AI-recommended task schedule:</p></div>{(items || []).map((item, i) => {const s=new Date();s.setDate(s.getDate()+(item.daysFromNow||7));const e=new Date(s);e.setHours(e.getHours()+1);const f=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');const gUrl=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title+' - '+owner+'/'+repo)}&dates=${f(s)}/${f(e)}&details=${encodeURIComponent(item.detail||'')}`;const oUrl=`https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(item.title+' - '+owner+'/'+repo)}&startdt=${s.toISOString()}&enddt=${e.toISOString()}&body=${encodeURIComponent(item.detail||'')}`;return(<div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-secondary/20 transition-colors"><div className="flex items-center justify-between mb-1.5"><p className="text-sm text-white font-medium">{item.title}</p><span className="text-[11px] text-gray-500 bg-white/[0.04] px-2 py-0.5 rounded-full">in {item.daysFromNow||7}d</span></div><p className="text-xs text-gray-400 leading-relaxed">{item.detail}</p><div className="flex gap-2 mt-3"><a href={gUrl} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-[11px] text-gray-300 hover:text-secondary hover:bg-secondary/10 transition-colors">+ Google Calendar</a><a href={oUrl} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-[11px] text-gray-300 hover:text-accent-blue hover:bg-accent-blue/10 transition-colors">+ Outlook</a></div></div>);})}</div>);
 }
-
 function ChecklistSection({ items }) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 mb-3">
-        <VscSparkle className="w-3.5 h-3.5 text-secondary" />
-        <p className="text-xs text-gray-400">Security posture assessment:</p>
-      </div>
-      {items.map((item, i) => (
-        <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${item.pass ? 'bg-green-500/[0.03] border-green-500/10' : 'bg-red-500/[0.03] border-red-500/10'}`}>
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${item.pass ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-            {item.pass ? '✓' : '✗'}
-          </div>
-          <span className={`text-sm ${item.pass ? 'text-gray-300' : 'text-white font-medium'}`}>{item.label}</span>
-        </div>
-      ))}
-    </div>
-  );
+  return (<div className="space-y-2"><div className="flex items-center gap-2 mb-3"><VscSparkle className="w-3.5 h-3.5 text-secondary" /><p className="text-xs text-gray-400">AI security assessment:</p></div>{(items || []).map((item, i) => (<div key={i} className={`flex items-center gap-3 p-3 rounded-xl border ${item.pass?'bg-green-500/[0.03] border-green-500/10':'bg-red-500/[0.03] border-red-500/10'}`}><div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${item.pass?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{item.pass?'✓':'✗'}</div><span className={`text-sm ${item.pass?'text-gray-300':'text-white font-medium'}`}>{item.label}</span></div>))}</div>);
 }
 
 
-
-// === INTELLIGENCE ENGINE ===
-function runEngine(repo, commits, contributors, rootFiles) {
+// === LOCAL FALLBACK ENGINE (used when AI endpoint unavailable) ===
+function runLocalEngine(repo, commits, contributors, rootFiles) {
   const files = (rootFiles || []).map(f => f.name.toLowerCase());
-  const has = (n) => files.some(f => f.includes(n.toLowerCase()));
+  const has = (n) => files.some(f => f.includes(n));
   const days = commits?.[0] ? Math.floor((Date.now() - new Date(commits[0].commit.author.date)) / 86400000) : 999;
   const cc = commits?.length || 0;
   const contribs = contributors?.length || 0;
   const stars = repo.stargazers_count || 0;
   const issues = repo.open_issues_count || 0;
-  const forks = repo.forks_count || 0;
-  const hasReadme=has('readme'),hasLicense=has('license'),hasCI=has('.github')||has('ci'),hasSecurity=has('security'),hasContrib=has('contributing'),hasChangelog=has('changelog'),hasTests=has('test')||has('spec'),hasDocker=has('docker'),hasPkg=has('package.json'),hasReq=has('requirements');
   const lang = repo.language || '';
-  const health = computeHealth(days, cc, contribs, stars, issues, commits);
-  const roadmap = genRoadmap(repo, hasReadme,hasLicense,hasCI,hasContrib,hasChangelog,hasTests,hasDocker,cc,issues,days,contribs);
-  const issuesList = genIssues(repo,hasLicense,hasCI,hasTests,hasSecurity,hasChangelog,lang,issues);
-  const commitPlan = genCommits(hasLicense,hasCI,hasTests,hasContrib,hasChangelog,hasSecurity,lang);
-  const fileInsights = genFiles(files,hasReadme,hasLicense,hasCI,hasTests,hasDocker,hasPkg,hasReq);
-  const calendar = genCalendar(issues,days,hasCI,hasTests);
-  const security = [{label:'LICENSE file present',pass:hasLicense},{label:'SECURITY.md policy',pass:hasSecurity},{label:'CI/CD pipeline active',pass:hasCI},{label:'Automated tests exist',pass:hasTests},{label:'Branch protection configured',pass:false},{label:'Dependency scanning enabled',pass:hasCI},{label:'No hardcoded secrets',pass:true},{label:'Container security (non-root)',pass:hasDocker}];
-  const growth = genGrowth(stars,forks,contribs,hasContrib,issues);
-  return { health, roadmap, issues: issuesList, commitPlan, fileInsights, calendar, security, growth };
-}
-function computeHealth(days,cc,contribs,stars,issues,commits) {
-  let score=5; score+=days<3?2:days<7?1:days<30?0:days<90?-1:-2; score+=contribs>10?1.5:contribs>3?0.5:contribs<=1?-1:0; score+=cc>25?1:cc<5?-1:0; score+=issues<5?0.5:issues>50?-1:0;
+  const hl=has('license'),hci=has('.github')||has('ci'),ht=has('test')||has('spec'),hs=has('security'),hc=has('contributing'),hcl=has('changelog'),hd=has('docker');
+
+  let score=5; score+=days<3?2:days<7?1:days<30?0:-1; score+=contribs>10?1.5:contribs>3?0.5:-0.5; score+=cc>25?1:cc<5?-1:0;
   score=Math.max(1,Math.min(10,Math.round(score)));
   const trend=cc>10?(days<7?'rising':'stable'):(days>30?'declining':'stable');
   const burnout=score<=3;
-  const tones=(commits||[]).slice(0,15).map(c=>{const l=c.commit.message.toLowerCase();const neg=['fix','bug','broken','hack','revert','hotfix','crash','fail'];const pos=['feat','add','implement','improve','enhance','refactor','release','new'];if(pos.some(w=>l.includes(w))&&!neg.some(w=>l.includes(w)))return'positive';if(neg.some(w=>l.includes(w)))return'negative';return'neutral';});
-  const posR=tones.length?tones.filter(t=>t==='positive').length/tones.length:0.5;
-  const insights=pickInsights(score,trend,days,cc,contribs,stars,issues,posR);
-  return{score,trend,burnout,insights};
+
+  const health = [
+    days<7 ? 'Active development detected with recent commits.' : 'Extended gap since last commit — may need attention.',
+    contribs>5 ? 'Healthy contributor base reduces single-point-of-failure risk.' : 'Limited contributors — consider expanding the team.',
+    score>=7 ? 'Overall project health is strong based on activity patterns.' : 'Some areas need improvement for long-term sustainability.',
+  ];
+  const roadmap = [];
+  if(!hci) roadmap.push({title:'Set up CI/CD',detail:'Add automated testing pipeline.'});
+  if(!ht) roadmap.push({title:'Add test coverage',detail:`Create test suite for ${lang} code.`});
+  if(!hc) roadmap.push({title:'Create CONTRIBUTING.md',detail:'Define how others can contribute.'});
+  roadmap.push({title:'Update dependencies',detail:'Check for outdated packages.'});
+  roadmap.push({title:'Plan next release',detail:'Review commits and bump version.'});
+
+  const issuesList = [];
+  if(!hci) issuesList.push({title:'[Infra] Set up CI/CD',body:'Add GitHub Actions workflow for automated testing.'});
+  if(!ht) issuesList.push({title:'[Quality] Add tests',body:'Create test suite with baseline coverage.'});
+  if(!hl) issuesList.push({title:'[Legal] Add LICENSE',body:'Add open source license file.'});
+
+  const commitPlan = [];
+  if(!hl) commitPlan.push({title:'chore: add license',detail:'Add MIT LICENSE file'});
+  if(!hci) commitPlan.push({title:'ci: add workflow',detail:'Create CI pipeline'});
+  commitPlan.push({title:'chore: update deps',detail:'Update dependencies'});
+  commitPlan.push({title:'feat: next feature',detail:'Implement priority feature'});
+
+  const fileInsights = [];
+  fileInsights.push({file:'README.md',insight:has('readme')?'Present — verify completeness.':'MISSING — add immediately.'});
+  if(!hl) fileInsights.push({file:'LICENSE',insight:'MISSING — add open source license.'});
+  if(!hci) fileInsights.push({file:'.github/workflows/',insight:'MISSING — add CI/CD.'});
+
+  const calendar = [{title:'Review issues',detail:`Triage ${issues} open issues.`,daysFromNow:1},{title:'Update deps',detail:'Security audit.',daysFromNow:7}];
+  const security = [{label:'LICENSE present',pass:hl},{label:'SECURITY.md',pass:hs},{label:'CI/CD active',pass:hci},{label:'Tests exist',pass:ht},{label:'No secrets exposed',pass:true}];
+  const growth = [{title:'Share on communities',detail:'Post to Reddit, HN, Dev.to.'},{title:'Add badges',detail:'Shields.io badges signal activity.'}];
+
+  return { health: { score, trend, burnout, insights: health }, roadmap, issues: issuesList, commitPlan, fileInsights, calendar, security, growth };
 }
-function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function pickInsights(score,trend,days,cc,contribs,stars,issues,posR){
-  const p=[];
-  if(days<3)p.push(pick(['Active development detected — contributions within the last 72 hours indicate strong maintainer engagement and project momentum.','High-frequency commit patterns suggest this project is under active, responsive development with clear forward progress.','Recent commit activity demonstrates consistent developer focus — this is an actively maintained codebase.']));
-  else if(days<14)p.push(pick(['Moderate development cadence — commits within two weeks indicate a healthy, sustainable maintenance rhythm.','Steady development pace with regular check-ins — the maintainer operates on a reliable schedule.']));
-  else if(days<60)p.push(pick(['Activity gap identified — no contributions in over two weeks suggests the maintainer may have competing priorities or is planning a larger change.','The recent pause in commits could indicate a planning phase, vacation, or temporary shift in focus.']));
-  else p.push(pick(['Extended inactivity period (60+ days without commits) — this raises questions about ongoing maintenance commitment.','No recent development activity. Recommend checking the fork network for continued community development.']));
-  if(trend==='rising')p.push(pick(['Commit velocity is accelerating — more recent contributions than earlier in the analysis period indicate growing project investment.','Rising development momentum suggests the maintainer is doubling down on this project with increasing focus.']));
-  else if(trend==='declining')p.push(pick(['Declining commit frequency compared to earlier months — this pattern often precedes maintenance-only mode or project archival.','Reduced development output suggests potential maintainer fatigue or a strategic shift to other priorities.']));
-  else p.push(pick(['Stable, consistent contribution cadence — this indicates a sustainable long-term maintenance approach with predictable output.','Steady rhythm of development suggests the project has found a healthy, maintainable pace.']));
-  if(posR>0.6)p.push(pick(['Commit message analysis shows predominantly constructive, forward-looking language — features and improvements significantly outweigh reactive fixes.','Positive development patterns indicate the maintainer is focused on building rather than firefighting — a healthy signal.']));
-  else if(posR<0.35)p.push(pick(['Higher proportion of fix and patch commits suggests accumulating technical debt that may need architectural attention.','Reactive development patterns dominate recent history — the ratio of fixes to features warrants a code health review.']));
-  else p.push(pick(['Balanced distribution of feature work and maintenance — this represents a healthy development cycle with both forward progress and stability.','The mix of new features and bug fixes shows a normal, well-managed development lifecycle.']));
-  return p.slice(0,3);
-}
-function genRoadmap(repo,hr,hl,hci,hc,hcl,ht,hd,cc,issues,days,contribs){const i=[];if(!hci)i.push({title:'Set up CI/CD pipeline',detail:'Add GitHub Actions workflow for automated testing on every push and pull request.'});if(!ht)i.push({title:'Establish test coverage',detail:`Create comprehensive test suite for ${repo.language||'the'} codebase — target minimum 60% coverage.`});if(!hc)i.push({title:'Create CONTRIBUTING.md',detail:'Define contribution guidelines including PR process, coding standards, and development setup.'});if(!hcl)i.push({title:'Implement CHANGELOG.md',detail:'Track all notable changes per version following Keep a Changelog format.'});if(issues>20)i.push({title:`Triage ${issues} open issues`,detail:'Systematically label, prioritize, and resolve or close stale issues to reduce backlog.'});if(contribs<=2)i.push({title:'Expand contributor base',detail:'Add "good first issue" labels, improve docs, and engage with interested community members.'});if(!hd)i.push({title:'Add containerization',detail:'Create Dockerfile for consistent development environments and simplified deployment.'});if(days>30)i.push({title:'Resume active development',detail:`Last contribution was ${days} days ago — define and begin next development iteration.`});i.push({title:'Prepare next release',detail:'Review all commits since last tag, compile changelog, bump semantic version.'});i.push({title:'Audit and update dependencies',detail:'Check for outdated packages, security advisories, and potential breaking changes.'});return i.slice(0,7);}
-function genIssues(repo,hl,hci,ht,hs,hcl,lang,issues){const i=[];if(!hci)i.push({title:'[Infrastructure] Configure CI/CD Pipeline',body:`This repository currently lacks automated CI/CD.\n\nProposed implementation:\n• Add GitHub Actions workflow (.github/workflows/ci.yml)\n• Run tests on push and pull_request events\n• Include lint checking and build verification\n• Primary language: ${lang||'Auto-detect'}`});if(!ht)i.push({title:'[Quality] Implement Automated Test Suite',body:`No automated tests detected in this repository.\n\nRecommended approach:\n• Framework: ${lang==='JavaScript'?'Vitest or Jest':lang==='Python'?'pytest':lang==='Go'?'native testing':'Language-appropriate framework'}\n• Add unit tests for core business logic\n• Target: 60%+ code coverage\n• Integrate with CI pipeline`});if(!hl)i.push({title:'[Legal] Add Open Source License',body:`No LICENSE file detected. Without explicit licensing, this code defaults to "all rights reserved."\n\nRecommended options:\n• MIT — Maximum permissiveness\n• Apache-2.0 — Patent protection included\n• GPL-3.0 — Copyleft (derivatives must be open source)`});if(!hs)i.push({title:'[Security] Establish Security Policy',body:`No SECURITY.md found. A security policy helps responsible disclosure.\n\nInclude:\n• How to report vulnerabilities privately\n• Which versions receive security updates\n• Expected response timeline (e.g., 48 hours acknowledgment)`});if(!hcl)i.push({title:'[Documentation] Create CHANGELOG',body:`No changelog found for tracking version history.\n\nFormat: Keep a Changelog (keepachangelog.com)\nSections per version: Added / Changed / Deprecated / Removed / Fixed / Security`});return i.slice(0,4);}
-function genCommits(hl,hci,ht,hc,hcl,hs,lang){const i=[];if(!hl)i.push({title:'chore: add MIT license file',detail:'Establish open source licensing for legal clarity'});if(!hci)i.push({title:`ci: configure ${lang||'automated'} workflow`,detail:'Create .github/workflows/ci.yml with test and build steps'});if(!ht)i.push({title:'test: scaffold initial test suite',detail:'Set up testing framework with first smoke test'});if(!hc)i.push({title:'docs: add CONTRIBUTING.md',detail:'Document PR process, coding standards, development setup'});if(!hcl)i.push({title:'docs: initialize CHANGELOG.md',detail:'Begin version history tracking in standard format'});if(!hs)i.push({title:'docs: add SECURITY.md',detail:'Define responsible disclosure and security policy'});i.push({title:'chore: audit and update dependencies',detail:'Resolve outdated packages and security advisories'});i.push({title:'refactor: code quality improvements',detail:'Address linting warnings, remove dead code, improve naming'});i.push({title:'feat: implement next priority feature',detail:'Build highest-priority feature from issue backlog'});i.push({title:'chore: prepare and tag release',detail:'Bump version, finalize changelog, create annotated git tag'});return i.slice(0,8);}
-function genFiles(files,hr,hl,hci,ht,hd,hp,hreq){const i=[];if(hr)i.push({file:'README.md',insight:'Present — verify it contains: project description, installation steps, usage examples, badge indicators, and contribution guidelines.'});else i.push({file:'README.md',insight:'MISSING — This is the first thing visitors see. Add project overview, quickstart guide, and visual examples immediately.'});if(!hl)i.push({file:'LICENSE',insight:'MISSING — Without this file, your code has no defined usage rights. Most open source projects use MIT or Apache-2.0.'});if(hci)i.push({file:'.github/workflows/',insight:'CI configuration detected — verify it triggers on both push and pull_request events with proper caching.'});else i.push({file:'.github/workflows/',insight:'MISSING — Automated testing prevents regressions. Create ci.yml with test, lint, and build jobs.'});if(hp)i.push({file:'package.json',insight:'Verify "test", "build", and "lint" scripts exist. Ensure critical dependencies are version-pinned.'});if(hreq)i.push({file:'requirements.txt',insight:'Pin exact versions to prevent unexpected breaks. Consider migrating to Poetry or pip-tools for lockfile support.'});if(!ht)i.push({file:'tests/ or __tests__/',insight:'MISSING — No test directory detected. This is critical for production reliability and safe refactoring.'});if(hd)i.push({file:'Dockerfile',insight:'Present — ensure multi-stage build pattern and non-root USER directive for security best practices.'});return i.slice(0,6);}
-function genCalendar(issues,days,hci,ht){const i=[];i.push({title:'Triage open issues',detail:`Review and label ${issues} open issues — close stale, prioritize actionable ones.`,daysFromNow:1});if(!hci)i.push({title:'Configure CI/CD',detail:'Set up GitHub Actions with test + build + lint steps.',daysFromNow:3});if(!ht)i.push({title:'Write initial tests',detail:'Add testing framework and create first meaningful test cases.',daysFromNow:5});i.push({title:'Dependency security audit',detail:'Run dependency check, update outdated packages, patch vulnerabilities.',daysFromNow:7});i.push({title:'Plan and prepare release',detail:'Compile changelog from commits, decide version bump, draft release notes.',daysFromNow:14});if(days>14)i.push({title:'Resume active development',detail:`Project inactive for ${days} days — define next iteration goals and begin work.`,daysFromNow:2});return i.slice(0,5);}
-function genGrowth(stars,forks,contribs,hc,issues){const i=[];if(stars<100)i.push({title:'Share on developer communities',detail:'Post to Reddit r/programming, Hacker News, Dev.to, and Twitter/X with a compelling demo or writeup.'});if(!hc)i.push({title:'Lower the contribution barrier',detail:'Add CONTRIBUTING.md, mark simple issues as "good first issue", and document development setup clearly.'});i.push({title:'Add visual demonstrations',detail:'GIFs, screenshots, or live demo links in README increase engagement by 3x on average.'});i.push({title:'Create beginner-friendly issues',detail:`Label ${Math.min(issues,5)} straightforward issues for new contributors to build community.`});i.push({title:'Publish technical content',detail:'Write a blog post or tutorial about your project — drives organic traffic and establishes authority.'});if(forks>10)i.push({title:'Engage active fork maintainers',detail:`${forks} forks exist — reach out to the most active ones for potential upstream PRs.`});i.push({title:'Submit to curated lists',detail:'Find relevant "awesome-*" repositories on GitHub and submit a PR to get listed.'});i.push({title:'Add professional badges',detail:'Shields.io badges (build status, version, stars) signal an active, well-maintained project.'});return i.slice(0,6);}
