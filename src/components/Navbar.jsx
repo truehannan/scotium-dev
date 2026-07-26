@@ -44,15 +44,12 @@ export default function Navbar() {
           </button>
           <div className="flex items-center gap-3">
             {/* GitHub Star */}
-            <iframe 
-  src="https://ghbtns.com/github-btn.html?user=truehannan&repo=scotium-dev&type=star&count=true&size=large" 
-  frameborder="0" 
-  scrolling="0" 
-  width="170" 
-  height="30" 
-  title="GitHub Stars">
-</iframe>
-
+            <a href={`https://github.com/truehannan/scotium-dev`} target="_blank" rel="noopener noreferrer">
+  <img 
+    src={`https://img.shields.io/github/stars/truehannan/scotium-dev?style=flat&logo=github&color=121214&labelColor=121214`} 
+    alt="GitHub Stars" 
+  />
+</a>
             {/* Mobile search button */}
             <button onClick={() => setSearchOpen(true)} className="sm:hidden p-2 text-gray-400 hover:text-white rounded-lg">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
