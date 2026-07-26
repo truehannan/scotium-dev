@@ -11,11 +11,14 @@ export async function onRequestPost(context) {
       });
     }
 
-    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+    const githubTokenUrl = new URL('/login/oauth/access_token', 'https://github.com').toString();
+
+    const tokenResponse = await fetch(githubTokenUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json',
+        'User-Agent': 'scotium-dev-oauth',
       },
       body: new URLSearchParams({
         client_id: env.GITHUB_CLIENT_ID,
@@ -34,6 +37,7 @@ export async function onRequestPost(context) {
             tokenData.error_description || `GitHub token endpoint returned ${tokenResponse.status}`,
           error_uri: tokenData.error_uri || null,
           github_status: tokenResponse.status,
+          endpoint: githubTokenUrl,
         }),
         {
           status: 400,
