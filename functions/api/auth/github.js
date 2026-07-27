@@ -2,7 +2,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const { code, redirect_uri } = await request.json();
+    const { code } = await request.json();
 
     if (!code) {
       return new Response(JSON.stringify({ error: 'Missing authorization code' }), {
@@ -11,33 +11,20 @@ export async function onRequestPost(context) {
       });
     }
 
-    const githubTokenUrl = 'https://github.com/login/oauth/access_token';
-
-    const body = new URLSearchParams({
-      client_id: env.GITHUB_CLIENT_ID,
-      client_secret: env.GITHUB_CLIENT_SECRET,
-      code,
-    });
-
-    if (redirect_uri) body.set('redirect_uri', redirect_uri);
-
-    const tokenResponse = await fetch(githubTokenUrl, {
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json',
-        'User-Agent': 'scotium-dev-oauth',
       },
-      body: body.toString(),
+      body: new URLSearchParams({
+        client_id: env.GITHUB_CLIENT_ID,
+        client_secret: env.GITHUB_CLIENT_SECRET,
+        code,
+      }).toString(),
     });
 
-    const raw = await tokenResponse.text();
-    let tokenData = {};
-    try {
-      tokenData = raw ? JSON.parse(raw) : {};
-    } catch {
-      tokenData = {};
-    }
+    const tokenData = await tokenResponse.json();
 
     if (!tokenResponse.ok || tokenData.error || !tokenData.access_token) {
       return new Response(
@@ -47,10 +34,6 @@ export async function onRequestPost(context) {
             tokenData.error_description || `GitHub token endpoint returned ${tokenResponse.status}`,
           error_uri: tokenData.error_uri || null,
           github_status: tokenResponse.status,
-          github_status_text: tokenResponse.statusText || null,
-          response_content_type: tokenResponse.headers.get('content-type') || null,
-          endpoint: githubTokenUrl,
-          raw_response: raw?.slice(0, 500) || null,
         }),
         {
           status: 400,
