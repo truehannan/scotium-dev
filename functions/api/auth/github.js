@@ -11,7 +11,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    const githubTokenUrl = new URL('/login/oauth/authorize', 'https://github.com').toString();
+    const githubTokenUrl = new URL('/login/oauth/access_token', 'https://github.com').toString();
 
     const body = new URLSearchParams({
       client_id: env.GITHUB_CLIENT_ID,
