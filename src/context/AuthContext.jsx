@@ -23,7 +23,10 @@ export function AuthProvider({ children }) {
   const login = () => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
     const redirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI || 'https://scotium.pages.dev/auth/callback';
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=public_repo,user:email,read:user,repo`;
+    window.location.href =
+      `https://github.com/login/oauth/authorize?client_id=${clientId}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&scope=public_repo,user:email,read:user,repo`;
   };
 
   const logout = () => { localStorage.removeItem('github_token'); setToken(null); setUser(null); };

@@ -14,7 +14,14 @@ export default function AuthCallback() {
     if (!code) { setError('No code received'); return; }
     (async () => {
       try {
-        const res = await fetch('/api/auth/github', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
+        const redirectUri =
+          import.meta.env.VITE_GITHUB_REDIRECT_URI || 'https://scotium.pages.dev/auth/callback';
+
+        const res = await fetch('/api/auth/github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, redirect_uri: redirectUri }),
+        });
         const data = await res.json();
         if (data.access_token) { setAuthToken(data.access_token); navigate('/dashboard'); }
         else setError(data.error || 'Auth failed');
