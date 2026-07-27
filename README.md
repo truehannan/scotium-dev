@@ -33,7 +33,7 @@
 ---
 
 <p align="center">
-  <img src="public/screenshot.png" alt="Scotium Screenshot" width="800" />
+  <img src="public/image.png" alt="Scotium Screenshot" width="800" />
 </p>
 
 ---
@@ -226,5 +226,5 @@ Tables: `users`, `favorites`, `cms_announcements`, `cms_banners`, `cms_sponsored
 ---
 
 <p align="center">
-  Built with 💚 by <a href="https://hannan.page.dev"><strong>Hannan</strong></a>
+  Built with 💚 by <a href="https://hannan.pages.dev"><strong>Hannan</strong></a>
 </p>
