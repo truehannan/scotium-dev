@@ -11,7 +11,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    const githubTokenUrl = new URL('/login/oauth/access_token', 'https://github.com').toString();
+    const githubTokenUrl = 'https://api.github.com/login/oauth/access_token';
 
     const body = new URLSearchParams({
       client_id: env.GITHUB_CLIENT_ID,
@@ -47,6 +47,8 @@ export async function onRequestPost(context) {
             tokenData.error_description || `GitHub token endpoint returned ${tokenResponse.status}`,
           error_uri: tokenData.error_uri || null,
           github_status: tokenResponse.status,
+          github_status_text: tokenResponse.statusText || null,
+          response_content_type: tokenResponse.headers.get('content-type') || null,
           endpoint: githubTokenUrl,
           raw_response: raw?.slice(0, 500) || null,
         }),
