@@ -2,7 +2,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const { code } = await request.json();
+    const { code, redirect_uri } = await request.json();
 
     if (!code) {
       return new Response(JSON.stringify({ error: 'Missing authorization code' }), {
@@ -13,6 +13,14 @@ export async function onRequestPost(context) {
 
     const githubTokenUrl = new URL('/login/oauth/access_token', 'https://github.com').toString();
 
+    const body = new URLSearchParams({
+      client_id: env.GITHUB_CLIENT_ID,
+      client_secret: env.GITHUB_CLIENT_SECRET,
+      code,
+    });
+
+    if (redirect_uri) body.set('redirect_uri', redirect_uri);
+
     const tokenResponse = await fetch(githubTokenUrl, {
       method: 'POST',
       headers: {
@@ -20,16 +28,18 @@ export async function onRequestPost(context) {
         Accept: 'application/json',
         'User-Agent': 'scotium-dev-oauth',
       },
-      body: new URLSearchParams({
-        client_id: env.GITHUB_CLIENT_ID,
-        client_secret: env.GITHUB_CLIENT_SECRET,
-        code,
-      }).toString(),
+      body: body.toString(),
     });
 
-    const tokenData = await tokenResponse.json();
+    const raw = await tokenResponse.text();
+    let tokenData = {};
+    try {
+      tokenData = raw ? JSON.parse(raw) : {};
+    } catch {
+      tokenData = {};
+    }
 
-    if (!tokenResponse.ok || tokenData.error) {
+    if (!tokenResponse.ok || tokenData.error || !tokenData.access_token) {
       return new Response(
         JSON.stringify({
           error: tokenData.error || 'github_oauth_error',
@@ -38,6 +48,7 @@ export async function onRequestPost(context) {
           error_uri: tokenData.error_uri || null,
           github_status: tokenResponse.status,
           endpoint: githubTokenUrl,
+          raw_response: raw?.slice(0, 500) || null,
         }),
         {
           status: 400,
